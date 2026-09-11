@@ -1,101 +1,98 @@
+// ========================================
+// SAPI AI — FRONTEND
+// Built by Saprielle Studio
+// ========================================
+
+// Your live Render backend
+const API_URL = "https://sapi-ai.onrender.com";
+
+
+// ========================================
+// ELEMENTS
+// ========================================
+
 const promptInput = document.getElementById("prompt");
 const sendButton = document.getElementById("sendButton");
 const messages = document.getElementById("messages");
 const welcome = document.getElementById("welcome");
-
-const newChat = document.getElementById("newChat");
 const modelSelect = document.getElementById("modelSelect");
 const selectedModel = document.getElementById("selectedModel");
+
+const newChat = document.getElementById("newChat");
+const recentChats = document.getElementById("recentChats");
 
 const mobileMenu = document.getElementById("mobileMenu");
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 
-const quickCards = document.querySelectorAll(".quick-card");
 
-
-/* =========================
-   PARTICLES
-========================= */
+// ========================================
+// PARTICLES
+// ========================================
 
 const particles = document.getElementById("particles");
 
-for (let i = 0; i < 45; i++) {
+if (particles) {
 
-    const particle = document.createElement("div");
+    for (let i = 0; i < 45; i++) {
 
-    particle.className = "particle";
+        const particle = document.createElement("span");
 
-    particle.style.left =
-        Math.random() * 100 + "%";
+        particle.className = "particle";
 
-    particle.style.animationDuration =
-        (8 + Math.random() * 15) + "s";
+        particle.style.left = Math.random() * 100 + "%";
+        particle.style.top = Math.random() * 100 + "%";
 
-    particle.style.animationDelay =
-        Math.random() * 10 + "s";
+        particle.style.animationDelay =
+            Math.random() * 8 + "s";
 
-    particles.appendChild(particle);
+        particle.style.animationDuration =
+            5 + Math.random() * 8 + "s";
+
+        particles.appendChild(particle);
+    }
 }
 
 
-/* =========================
-   SEND MESSAGE
-========================= */
+// ========================================
+// ADD MESSAGE
+// ========================================
 
-function sendMessage() {
-
-    const text = promptInput.value.trim();
-
-    if (!text) return;
+function addMessage(text, sender = "ai") {
 
     welcome.style.display = "none";
 
-    addMessage(text, "user");
-
-    promptInput.value = "";
-
-    resizeTextarea();
-
-    /*
-        TEMPORARY SAPI RESPONSE
-
-        Later this will call our secure backend.
-    */
-
-    setTimeout(() => {
-
-        addMessage(
-            "Hey! 👋 I'm SAPI.\n\nMy AI engine isn't connected yet, but the SAPI interface is ready. Next we'll connect the backend and real AI models.",
-            "ai"
-        );
-
-    }, 600);
-}
-
-
-/* =========================
-   ADD MESSAGE
-========================= */
-
-function addMessage(text, type) {
-
     const message = document.createElement("div");
 
-    message.className = "message";
+    message.className =
+        sender === "user"
+            ? "message user-message"
+            : "message ai-message";
+
 
     const avatar = document.createElement("div");
 
     avatar.className = "message-avatar";
 
     avatar.textContent =
-        type === "user" ? "U" : "S";
+        sender === "user"
+            ? "U"
+            : "S";
+
 
     const content = document.createElement("div");
 
     content.className = "message-content";
 
-    content.textContent = text;
+
+    const messageText = document.createElement("div");
+
+    messageText.className = "message-text";
+
+    messageText.textContent = text;
+
+
+    content.appendChild(messageText);
 
     message.appendChild(avatar);
 
@@ -103,44 +100,155 @@ function addMessage(text, type) {
 
     messages.appendChild(message);
 
-    scrollToBottom();
+
+    messages.scrollTop =
+        messages.scrollHeight;
 }
 
 
-/* =========================
-   SCROLL
-========================= */
+// ========================================
+// SEND MESSAGE TO BACKEND
+// ========================================
 
-function scrollToBottom() {
+async function sendMessage() {
 
-    const chatArea =
-        document.querySelector(".chat-area");
-
-    chatArea.scrollTo({
-        top: chatArea.scrollHeight,
-        behavior: "smooth"
-    });
-}
+    const text =
+        promptInput.value.trim();
 
 
-/* =========================
-   ENTER TO SEND
-========================= */
-
-promptInput.addEventListener("keydown", (event) => {
-
-    if (
-        event.key === "Enter" &&
-        !event.shiftKey
-    ) {
-
-        event.preventDefault();
-
-        sendMessage();
+    if (!text) {
+        return;
     }
 
-});
 
+    const model =
+        modelSelect.value;
+
+
+    // Show user's message
+    addMessage(text, "user");
+
+
+    // Clear input
+    promptInput.value = "";
+
+    promptInput.style.height = "auto";
+
+
+    // Disable button while loading
+    sendButton.disabled = true;
+
+
+    // Temporary loading message
+    const loadingMessage =
+        document.createElement("div");
+
+    loadingMessage.className =
+        "message ai-message";
+
+
+    loadingMessage.innerHTML = `
+        <div class="message-avatar">S</div>
+
+        <div class="message-content">
+
+            <div class="message-text">
+                SAPI is thinking...
+            </div>
+
+        </div>
+    `;
+
+
+    messages.appendChild(loadingMessage);
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/chat`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        message: text,
+                        model: model
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        // Remove loading message
+        loadingMessage.remove();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "SAPI backend error."
+            );
+
+        }
+
+
+        // Show backend response
+        addMessage(
+            data.response ||
+            "SAPI returned an empty response.",
+            "ai"
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "SAPI Error:",
+            error
+        );
+
+
+        loadingMessage.remove();
+
+
+        addMessage(
+            "Sorry bro 😅 SAPI couldn't reach the backend right now. Please try again.",
+            "ai"
+        );
+
+    }
+
+
+    finally {
+
+        sendButton.disabled =
+            false;
+
+        promptInput.focus();
+
+    }
+
+}
+
+
+// ========================================
+// SEND BUTTON
+// ========================================
 
 sendButton.addEventListener(
     "click",
@@ -148,71 +256,105 @@ sendButton.addEventListener(
 );
 
 
-/* =========================
-   AUTO RESIZE
-========================= */
-
-function resizeTextarea() {
-
-    promptInput.style.height = "auto";
-
-    promptInput.style.height =
-        Math.min(
-            promptInput.scrollHeight,
-            160
-        ) + "px";
-}
-
+// ========================================
+// ENTER TO SEND
+// ========================================
 
 promptInput.addEventListener(
-    "input",
-    resizeTextarea
-);
+    "keydown",
+    (event) => {
 
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
 
-/* =========================
-   MODEL SELECTOR
-========================= */
+            event.preventDefault();
 
-modelSelect.addEventListener(
-    "change",
-    () => {
+            sendMessage();
 
-        const modelName =
-            modelSelect.options[
-                modelSelect.selectedIndex
-            ].text;
-
-        selectedModel.textContent =
-            modelName;
+        }
 
     }
 );
 
 
-/* =========================
-   QUICK ACTIONS
-========================= */
+// ========================================
+// AUTO RESIZE TEXTAREA
+// ========================================
 
-quickCards.forEach(card => {
+promptInput.addEventListener(
+    "input",
+    () => {
 
-    card.addEventListener("click", () => {
+        promptInput.style.height =
+            "auto";
 
-        promptInput.value =
-            card.dataset.prompt;
+        promptInput.style.height =
+            Math.min(
+                promptInput.scrollHeight,
+                180
+            ) + "px";
 
-        resizeTextarea();
+    }
+);
 
-        promptInput.focus();
+
+// ========================================
+// MODEL SELECTOR
+// ========================================
+
+modelSelect.addEventListener(
+    "change",
+    () => {
+
+        selectedModel.textContent =
+            modelSelect.options[
+                modelSelect.selectedIndex
+            ].text;
+
+        console.log(
+            "SAPI model:",
+            modelSelect.value
+        );
+
+    }
+);
+
+
+// ========================================
+// QUICK ACTIONS
+// ========================================
+
+document
+    .querySelectorAll(".quick-card")
+    .forEach(card => {
+
+        card.addEventListener(
+            "click",
+            () => {
+
+                const prompt =
+                    card.dataset.prompt;
+
+                promptInput.value =
+                    prompt;
+
+                promptInput.focus();
+
+                promptInput.dispatchEvent(
+                    new Event("input")
+                );
+
+            }
+        );
 
     });
 
-});
 
-
-/* =========================
-   NEW CHAT
-========================= */
+// ========================================
+// NEW CHAT
+// ========================================
 
 newChat.addEventListener(
     "click",
@@ -220,56 +362,168 @@ newChat.addEventListener(
 
         messages.innerHTML = "";
 
-        welcome.style.display = "block";
+        welcome.style.display =
+            "flex";
 
         promptInput.value = "";
 
-        resizeTextarea();
+        promptInput.style.height =
+            "auto";
 
-        closeMobileMenu();
+        promptInput.focus();
 
     }
 );
 
 
-/* =========================
-   MOBILE MENU
-========================= */
+// ========================================
+// MOBILE MENU
+// ========================================
 
 mobileMenu.addEventListener(
     "click",
     () => {
 
-        sidebar.classList.toggle("open");
+        sidebar.classList.add(
+            "open"
+        );
 
-        overlay.classList.toggle("show");
+        overlay.classList.add(
+            "show"
+        );
 
     }
 );
 
 
+// ========================================
+// CLOSE MOBILE MENU
+// ========================================
+
 overlay.addEventListener(
     "click",
-    closeMobileMenu
+    () => {
+
+        sidebar.classList.remove(
+            "open"
+        );
+
+        overlay.classList.remove(
+            "show"
+        );
+
+    }
 );
 
 
-function closeMobileMenu() {
+// ========================================
+// LOAD MODELS FROM BACKEND
+// ========================================
 
-    sidebar.classList.remove("open");
+async function loadModels() {
 
-    overlay.classList.remove("show");
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/models`
+            );
+
+
+        if (!response.ok) {
+            throw new Error(
+                "Could not load models."
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (
+            !data.models ||
+            !Array.isArray(data.models)
+        ) {
+            return;
+        }
+
+
+        modelSelect.innerHTML = "";
+
+
+        data.models.forEach(
+            model => {
+
+                const option =
+                    document.createElement(
+                        "option"
+                    );
+
+                option.value =
+                    model.id;
+
+                option.textContent =
+                    model.name;
+
+                option.disabled =
+                    model.available === false;
+
+                modelSelect.appendChild(
+                    option
+                );
+
+            }
+        );
+
+
+        if (modelSelect.options.length) {
+
+            modelSelect.selectedIndex =
+                0;
+
+            selectedModel.textContent =
+                modelSelect.options[0].text;
+
+        }
+
+
+    }
+
+    catch (error) {
+
+        console.warn(
+            "Model loading failed:",
+            error
+        );
+
+    }
 
 }
 
 
-/* =========================
-   CONSOLE
-========================= */
+// ========================================
+// START SAPI
+// ========================================
+
+loadModels();
+
 
 console.log(
-    "%cSAPI AI",
-    "font-size:24px;font-weight:bold;color:#a78bfa;"
+    "================================"
+);
+
+console.log(
+    "        SAPI AI FRONTEND"
+);
+
+console.log(
+    "================================"
+);
+
+console.log(
+    "Backend:",
+    API_URL
 );
 
 console.log(
