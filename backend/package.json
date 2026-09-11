@@ -1,1 +1,9 @@
-
+{
+  "name": "sapi-ai-backend",
+  "version": "1.0.0",
+  "description": "SAPI AI backend — Built by Saprielle Studio.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
