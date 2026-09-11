@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 3000;
 ========================= */
 
 app.use(cors());
-
 app.use(express.json());
 
 
@@ -47,104 +46,194 @@ app.get("/api/health", (req, res) => {
 
 
 /* =========================
-   MODELS
+   MODEL REGISTRY
+========================= */
+
+const models = [
+
+    {
+        id: "sapi-plus",
+        name: "SAPI+",
+        provider: "SAPI",
+        available: false
+    },
+
+    {
+        id: "sapi-55",
+        name: "SAPI 5.5+",
+        provider: "SAPI",
+        available: false
+    },
+
+    {
+        id: "gemini",
+        name: "Gemini",
+        provider: "Google",
+        available: false
+    },
+
+    {
+        id: "chatgpt",
+        name: "ChatGPT",
+        provider: "OpenAI",
+        available: false
+    },
+
+    {
+        id: "claude",
+        name: "Claude",
+        provider: "Anthropic",
+        available: false
+    }
+
+];
+
+
+/* =========================
+   MODELS API
 ========================= */
 
 app.get("/api/models", (req, res) => {
 
     res.json({
-
-        models: [
-
-            {
-                id: "sapi-plus",
-                name: "SAPI+",
-                provider: "SAPI",
-                available: false
-            },
-
-            {
-                id: "sapi-55",
-                name: "SAPI 5.5+",
-                provider: "SAPI",
-                available: false
-            },
-
-            {
-                id: "gemini",
-                name: "Gemini",
-                provider: "Google",
-                available: false
-            },
-
-            {
-                id: "chatgpt",
-                name: "ChatGPT",
-                provider: "OpenAI",
-                available: false
-            },
-
-            {
-                id: "claude",
-                name: "Claude",
-                provider: "Anthropic",
-                available: false
-            }
-
-        ]
-
+        success: true,
+        models: models
     });
 
 });
 
 
 /* =========================
-   CHAT
+   MODEL ROUTER
+========================= */
+
+async function routeToModel(model, message) {
+
+    switch (model) {
+
+        case "sapi-plus":
+
+            return {
+                success: false,
+                provider: "SAPI",
+                model: "SAPI+",
+                response:
+                    "SAPI+ is not connected to its AI engine yet."
+            };
+
+
+        case "sapi-55":
+
+            return {
+                success: false,
+                provider: "SAPI",
+                model: "SAPI 5.5+",
+                response:
+                    "SAPI 5.5+ is not connected to its AI engine yet."
+            };
+
+
+        case "gemini":
+
+            return {
+                success: false,
+                provider: "Google",
+                model: "Gemini",
+                response:
+                    "Gemini is not connected yet."
+            };
+
+
+        case "chatgpt":
+
+            return {
+                success: false,
+                provider: "OpenAI",
+                model: "ChatGPT",
+                response:
+                    "OpenAI models are not connected yet."
+            };
+
+
+        case "claude":
+
+            return {
+                success: false,
+                provider: "Anthropic",
+                model: "Claude",
+                response:
+                    "Claude is not connected yet."
+            };
+
+
+        default:
+
+            return {
+                success: false,
+                provider: "SAPI",
+                model: "Unknown",
+                response:
+                    "That model is not registered with SAPI."
+            };
+
+    }
+
+}
+
+
+/* =========================
+   CHAT API
 ========================= */
 
 app.post("/api/chat", async (req, res) => {
 
     try {
 
-        const {
-            message,
-            model
-        } = req.body;
+        const message =
+            typeof req.body.message === "string"
+                ? req.body.message.trim()
+                : "";
+
+        const model =
+            typeof req.body.model === "string"
+                ? req.body.model
+                : "sapi-plus";
 
 
         if (!message) {
 
             return res.status(400).json({
+                success: false,
                 error: "Message is required."
             });
 
         }
 
 
-        /*
-            AI PROVIDER ROUTING WILL GO HERE.
-
-            Example:
-
-            SAPI+      → SAPI engine
-            SAPI 5.5+  → SAPI engine
-            Gemini     → Google
-            ChatGPT    → OpenAI
-            Claude     → Anthropic
-
-            We will add the actual secure
-            connections next.
-        */
+        const result =
+            await routeToModel(
+                model,
+                message
+            );
 
 
         res.json({
 
             success: true,
 
-            model: model || "sapi-plus",
+            requestedModel: model,
+
+            provider:
+                result.provider,
+
+            model:
+                result.model,
+
+            connected:
+                result.success,
 
             response:
-                "SAPI backend received your message. The AI engine is the next step."
+                result.response
 
         });
 
@@ -152,15 +241,40 @@ app.post("/api/chat", async (req, res) => {
 
     catch (error) {
 
-        console.error(error);
+        console.error(
+            "SAPI Router Error:",
+            error
+        );
+
 
         res.status(500).json({
 
-            error: "SAPI AI server error."
+            success: false,
+
+            error:
+                "SAPI AI server error."
 
         });
 
     }
+
+});
+
+
+/* =========================
+   404
+========================= */
+
+app.use((req, res) => {
+
+    res.status(404).json({
+
+        success: false,
+
+        error:
+            "SAPI API endpoint not found."
+
+    });
 
 });
 
@@ -177,6 +291,7 @@ app.listen(PORT, () => {
     console.log("================================");
     console.log("");
     console.log(`Server running on port ${PORT}`);
+    console.log("Model router: ONLINE");
     console.log("Built by Saprielle Studio.");
     console.log("");
 
