@@ -3,7 +3,6 @@
 // Built by Saprielle Studio
 // ========================================
 
-// Your live Render backend
 const API_URL = "https://sapi-ai.onrender.com";
 
 
@@ -15,6 +14,7 @@ const promptInput = document.getElementById("prompt");
 const sendButton = document.getElementById("sendButton");
 const messages = document.getElementById("messages");
 const welcome = document.getElementById("welcome");
+
 const modelSelect = document.getElementById("modelSelect");
 const selectedModel = document.getElementById("selectedModel");
 
@@ -40,8 +40,11 @@ if (particles) {
 
         particle.className = "particle";
 
-        particle.style.left = Math.random() * 100 + "%";
-        particle.style.top = Math.random() * 100 + "%";
+        particle.style.left =
+            Math.random() * 100 + "%";
+
+        particle.style.top =
+            Math.random() * 100 + "%";
 
         particle.style.animationDelay =
             Math.random() * 8 + "s";
@@ -51,6 +54,7 @@ if (particles) {
 
         particles.appendChild(particle);
     }
+
 }
 
 
@@ -72,7 +76,8 @@ function addMessage(text, sender = "ai") {
 
     const avatar = document.createElement("div");
 
-    avatar.className = "message-avatar";
+    avatar.className =
+        "message-avatar";
 
     avatar.textContent =
         sender === "user"
@@ -82,32 +87,85 @@ function addMessage(text, sender = "ai") {
 
     const content = document.createElement("div");
 
-    content.className = "message-content";
+    content.className =
+        "message-content";
 
 
-    const messageText = document.createElement("div");
+    const messageText =
+        document.createElement("div");
 
-    messageText.className = "message-text";
+    messageText.className =
+        "message-text";
 
-    messageText.textContent = text;
+    messageText.textContent =
+        text;
 
 
-    content.appendChild(messageText);
+    content.appendChild(
+        messageText
+    );
 
-    message.appendChild(avatar);
+    message.appendChild(
+        avatar
+    );
 
-    message.appendChild(content);
+    message.appendChild(
+        content
+    );
 
-    messages.appendChild(message);
+    messages.appendChild(
+        message
+    );
 
 
     messages.scrollTop =
         messages.scrollHeight;
+
 }
 
 
 // ========================================
-// SEND MESSAGE TO BACKEND
+// LOADING MESSAGE
+// ========================================
+
+function addLoadingMessage() {
+
+    const loading =
+        document.createElement("div");
+
+    loading.className =
+        "message ai-message";
+
+
+    loading.innerHTML = `
+        <div class="message-avatar">S</div>
+
+        <div class="message-content">
+
+            <div class="message-text sapi-loading">
+                SAPI is thinking...
+            </div>
+
+        </div>
+    `;
+
+
+    messages.appendChild(
+        loading
+    );
+
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+
+    return loading;
+
+}
+
+
+// ========================================
+// SEND MESSAGE
 // ========================================
 
 async function sendMessage() {
@@ -125,45 +183,27 @@ async function sendMessage() {
         modelSelect.value;
 
 
-    // Show user's message
-    addMessage(text, "user");
+    // Show user message
+    addMessage(
+        text,
+        "user"
+    );
 
 
     // Clear input
     promptInput.value = "";
 
-    promptInput.style.height = "auto";
+    promptInput.style.height =
+        "auto";
 
 
-    // Disable button while loading
-    sendButton.disabled = true;
+    // Disable send
+    sendButton.disabled =
+        true;
 
 
-    // Temporary loading message
-    const loadingMessage =
-        document.createElement("div");
-
-    loadingMessage.className =
-        "message ai-message";
-
-
-    loadingMessage.innerHTML = `
-        <div class="message-avatar">S</div>
-
-        <div class="message-content">
-
-            <div class="message-text">
-                SAPI is thinking...
-            </div>
-
-        </div>
-    `;
-
-
-    messages.appendChild(loadingMessage);
-
-    messages.scrollTop =
-        messages.scrollHeight;
+    const loading =
+        addLoadingMessage();
 
 
     try {
@@ -180,9 +220,13 @@ async function sendMessage() {
                     },
 
                     body: JSON.stringify({
+
                         message: text,
+
                         model: model
+
                     })
+
                 }
             );
 
@@ -191,8 +235,7 @@ async function sendMessage() {
             await response.json();
 
 
-        // Remove loading message
-        loadingMessage.remove();
+        loading.remove();
 
 
         if (!response.ok) {
@@ -205,12 +248,16 @@ async function sendMessage() {
         }
 
 
-        // Show backend response
+        // Show response
         addMessage(
             data.response ||
             "SAPI returned an empty response.",
             "ai"
         );
+
+
+        // Add chat to recent list
+        addRecentChat(text);
 
 
     }
@@ -223,11 +270,11 @@ async function sendMessage() {
         );
 
 
-        loadingMessage.remove();
+        loading.remove();
 
 
         addMessage(
-            "Sorry bro 😅 SAPI couldn't reach the backend right now. Please try again.",
+            "SAPI couldn't reach the backend right now. Please try again.",
             "ai"
         );
 
@@ -280,7 +327,7 @@ promptInput.addEventListener(
 
 
 // ========================================
-// AUTO RESIZE TEXTAREA
+// AUTO RESIZE INPUT
 // ========================================
 
 promptInput.addEventListener(
@@ -308,13 +355,23 @@ modelSelect.addEventListener(
     "change",
     () => {
 
-        selectedModel.textContent =
+        const option =
             modelSelect.options[
                 modelSelect.selectedIndex
-            ].text;
+            ];
+
+
+        if (!option) {
+            return;
+        }
+
+
+        selectedModel.textContent =
+            option.text;
+
 
         console.log(
-            "SAPI model:",
+            "Selected SAPI model:",
             modelSelect.value
         );
 
@@ -337,10 +394,13 @@ document
                 const prompt =
                     card.dataset.prompt;
 
+
                 promptInput.value =
                     prompt;
 
+
                 promptInput.focus();
+
 
                 promptInput.dispatchEvent(
                     new Event("input")
@@ -353,6 +413,60 @@ document
 
 
 // ========================================
+// ADD RECENT CHAT
+// ========================================
+
+function addRecentChat(text) {
+
+    if (!recentChats) {
+        return;
+    }
+
+
+    const item =
+        document.createElement("button");
+
+    item.className =
+        "chat-item";
+
+
+    item.textContent =
+        text.length > 35
+            ? text.substring(0, 35) + "..."
+            : text;
+
+
+    item.addEventListener(
+        "click",
+        () => {
+
+            promptInput.value =
+                text;
+
+            promptInput.focus();
+
+        }
+    );
+
+
+    recentChats.prepend(
+        item
+    );
+
+
+    // Keep only the latest 8 chats
+    while (
+        recentChats.children.length > 8
+    ) {
+
+        recentChats.lastElementChild.remove();
+
+    }
+
+}
+
+
+// ========================================
 // NEW CHAT
 // ========================================
 
@@ -360,12 +474,14 @@ newChat.addEventListener(
     "click",
     () => {
 
-        messages.innerHTML = "";
+        messages.innerHTML =
+            "";
 
         welcome.style.display =
             "flex";
 
-        promptInput.value = "";
+        promptInput.value =
+            "";
 
         promptInput.style.height =
             "auto";
@@ -417,6 +533,41 @@ overlay.addEventListener(
 
 
 // ========================================
+// CREATE MODEL OPTION
+// ========================================
+
+function createModelOption(model) {
+
+    const option =
+        document.createElement(
+            "option"
+        );
+
+
+    option.value =
+        model.id;
+
+
+    option.textContent =
+        model.name +
+        (
+            model.available
+                ? " • Connected"
+                : " • Coming soon"
+        );
+
+
+    // Keep unavailable models selectable
+    // so we can test the router.
+    option.disabled = false;
+
+
+    return option;
+
+}
+
+
+// ========================================
 // LOAD MODELS FROM BACKEND
 // ========================================
 
@@ -431,9 +582,11 @@ async function loadModels() {
 
 
         if (!response.ok) {
+
             throw new Error(
-                "Could not load models."
+                "Model API failed."
             );
+
         }
 
 
@@ -445,55 +598,112 @@ async function loadModels() {
             !data.models ||
             !Array.isArray(data.models)
         ) {
-            return;
+
+            throw new Error(
+                "Invalid model data."
+            );
+
         }
 
 
-        modelSelect.innerHTML = "";
+        // Clear current options
+        modelSelect.innerHTML =
+            "";
+
+
+        // Group models by provider
+        const groups = {};
 
 
         data.models.forEach(
             model => {
 
-                const option =
-                    document.createElement(
-                        "option"
-                    );
+                if (
+                    !groups[
+                        model.provider
+                    ]
+                ) {
 
-                option.value =
-                    model.id;
+                    groups[
+                        model.provider
+                    ] = [];
 
-                option.textContent =
-                    model.name;
+                }
 
-                option.disabled =
-                    model.available === false;
 
-                modelSelect.appendChild(
-                    option
-                );
+                groups[
+                    model.provider
+                ].push(model);
 
             }
         );
 
 
-        if (modelSelect.options.length) {
+        // Create provider groups
+        Object.entries(groups)
+            .forEach(
+                ([provider, providerModels]) => {
+
+                    const group =
+                        document.createElement(
+                            "optgroup"
+                        );
+
+
+                    group.label =
+                        provider;
+
+
+                    providerModels.forEach(
+                        model => {
+
+                            group.appendChild(
+                                createModelOption(
+                                    model
+                                )
+                            );
+
+                        }
+                    );
+
+
+                    modelSelect.appendChild(
+                        group
+                    );
+
+                }
+            );
+
+
+        // Select first model
+        if (
+            modelSelect.options.length
+        ) {
 
             modelSelect.selectedIndex =
                 0;
 
+
             selectedModel.textContent =
-                modelSelect.options[0].text;
+                modelSelect
+                    .options[0]
+                    .text;
 
         }
 
 
+        console.log(
+            "SAPI models loaded:",
+            data.models
+        );
+
     }
+
 
     catch (error) {
 
         console.warn(
-            "Model loading failed:",
+            "Could not load SAPI models:",
             error
         );
 
@@ -503,7 +713,7 @@ async function loadModels() {
 
 
 // ========================================
-// START SAPI
+// START
 // ========================================
 
 loadModels();
@@ -524,6 +734,10 @@ console.log(
 console.log(
     "Backend:",
     API_URL
+);
+
+console.log(
+    "Model router: CONNECTED"
 );
 
 console.log(
