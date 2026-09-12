@@ -24,38 +24,23 @@ const mobileMenu = document.getElementById("mobileMenu");
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 
-// ========================================
-// STATE
-// ========================================
-
-let conversations = [];
-
-try {
-    conversations = JSON.parse(
-        localStorage.getItem("sapi_conversations") || "[]"
-    );
-
-    if (!Array.isArray(conversations)) {
-        conversations = [];
-    }
-} catch {
-    conversations = [];
-}
-
-let currentConversationId = null;
-
 
 // ========================================
 // PARTICLES
 // ========================================
 
-const particles = document.getElementById("particles");
+const particles =
+    document.getElementById("particles");
 
 if (particles) {
-    for (let i = 0; i < 45; i++) {
-        const particle = document.createElement("span");
 
-        particle.className = "particle";
+    for (let i = 0; i < 45; i++) {
+
+        const particle =
+            document.createElement("span");
+
+        particle.className =
+            "particle";
 
         particle.style.left =
             Math.random() * 100 + "%";
@@ -69,116 +54,10 @@ if (particles) {
         particle.style.animationDuration =
             5 + Math.random() * 8 + "s";
 
-        particles.appendChild(particle);
+        particles.appendChild(
+            particle
+        );
     }
-}
-
-
-// ========================================
-// STORAGE
-// ========================================
-
-function saveConversations() {
-    localStorage.setItem(
-        "sapi_conversations",
-        JSON.stringify(conversations)
-    );
-}
-
-
-// ========================================
-// CREATE CONVERSATION
-// ========================================
-
-function createConversation(firstMessage = "New Chat") {
-
-    const conversation = {
-        id: Date.now().toString(),
-
-        title:
-            firstMessage.length > 40
-                ? firstMessage.substring(0, 40) + "..."
-                : firstMessage,
-
-        model:
-            modelSelect.value || "google-gemini",
-
-        messages: [],
-
-        pinned: false,
-
-        archived: false,
-
-        createdAt:
-            new Date().toISOString(),
-
-        updatedAt:
-            new Date().toISOString()
-    };
-
-    conversations.unshift(conversation);
-
-    currentConversationId =
-        conversation.id;
-
-    saveConversations();
-
-    renderRecentChats();
-
-    return conversation;
-}
-
-
-// ========================================
-// GET CURRENT CONVERSATION
-// ========================================
-
-function getCurrentConversation() {
-
-    return conversations.find(
-        conversation =>
-            conversation.id ===
-            currentConversationId
-    );
-}
-
-
-// ========================================
-// SAVE MESSAGE
-// ========================================
-
-function saveMessageToConversation(
-    text,
-    sender
-) {
-
-    let conversation =
-        getCurrentConversation();
-
-    if (!conversation) {
-        conversation =
-            createConversation(text);
-    }
-
-    conversation.messages.push({
-
-        id:
-            Date.now().toString(),
-
-        sender,
-
-        text,
-
-        timestamp:
-            new Date().toISOString()
-    });
-
-    conversation.updatedAt =
-        new Date().toISOString();
-
-    saveConversations();
-
-    renderRecentChats();
 }
 
 
@@ -188,13 +67,11 @@ function saveMessageToConversation(
 
 function addMessage(
     text,
-    sender = "ai",
-    save = true
+    sender = "ai"
 ) {
 
-    if (welcome) {
-        welcome.style.display = "none";
-    }
+    welcome.style.display =
+        "none";
 
     const message =
         document.createElement("div");
@@ -230,24 +107,24 @@ function addMessage(
     messageText.textContent =
         text;
 
-    content.appendChild(messageText);
+    content.appendChild(
+        messageText
+    );
 
-    message.appendChild(avatar);
+    message.appendChild(
+        avatar
+    );
 
-    message.appendChild(content);
+    message.appendChild(
+        content
+    );
 
-    messages.appendChild(message);
+    messages.appendChild(
+        message
+    );
 
     messages.scrollTop =
         messages.scrollHeight;
-
-    if (save) {
-
-        saveMessageToConversation(
-            text,
-            sender
-        );
-    }
 }
 
 
@@ -318,7 +195,17 @@ async function sendMessage() {
     const loading =
         addLoadingMessage();
 
+
     try {
+
+        console.log(
+            "SAPI request:",
+            {
+                model,
+                message: text
+            }
+        );
+
 
         const response =
             await fetch(
@@ -339,35 +226,102 @@ async function sendMessage() {
                 }
             );
 
-        const data =
-            await response.json();
+
+        // ========================================
+        // READ RESPONSE SAFELY
+        // ========================================
+
+        let data = null;
+
+        try {
+
+            data =
+                await response.json();
+
+        } catch (jsonError) {
+
+            console.error(
+                "SAPI returned invalid JSON:",
+                jsonError
+            );
+
+        }
+
 
         loading.remove();
 
+
+        // ========================================
+        // BACKEND ERROR
+        // ========================================
+
         if (!response.ok) {
-            throw new Error(
-                data.error ||
-                "SAPI backend error."
+
+            const backendError =
+                data &&
+                data.error
+                    ? data.error
+                    : `Backend returned HTTP ${response.status}.`;
+
+            console.error(
+                "SAPI backend error:",
+                backendError
             );
+
+            addMessage(
+                `SAPI backend error: ${backendError}`,
+                "ai"
+            );
+
+            return;
         }
 
+
+        // ========================================
+        // SUCCESS
+        // ========================================
+
+        if (
+            !data ||
+            !data.response
+        ) {
+
+            console.error(
+                "Invalid SAPI response:",
+                data
+            );
+
+            addMessage(
+                "SAPI received an empty response from the AI provider.",
+                "ai"
+            );
+
+            return;
+        }
+
+
         addMessage(
-            data.response ||
-            "SAPI returned an empty response.",
+            data.response,
             "ai"
         );
+
+
+        addRecentChat(
+            text
+        );
+
 
     } catch (error) {
 
         console.error(
-            "SAPI Error:",
+            "SAPI network error:",
             error
         );
 
         loading.remove();
 
         addMessage(
-            "SAPI couldn't reach the backend right now. Please try again.",
+            "SAPI couldn't connect to the backend. Please check the Render service.",
             "ai"
         );
 
@@ -385,97 +339,82 @@ async function sendMessage() {
 // SEND BUTTON
 // ========================================
 
-if (sendButton) {
-
-    sendButton.addEventListener(
-        "click",
-        sendMessage
-    );
-}
+sendButton.addEventListener(
+    "click",
+    sendMessage
+);
 
 
 // ========================================
 // ENTER TO SEND
 // ========================================
 
-if (promptInput) {
+promptInput.addEventListener(
+    "keydown",
+    (event) => {
 
-    promptInput.addEventListener(
-        "keydown",
-        event => {
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
 
-            if (
-                event.key === "Enter" &&
-                !event.shiftKey
-            ) {
+            event.preventDefault();
 
-                event.preventDefault();
-
-                sendMessage();
-            }
+            sendMessage();
         }
-    );
+
+    }
+);
 
 
-    // ========================================
-    // AUTO RESIZE
-    // ========================================
+// ========================================
+// AUTO RESIZE INPUT
+// ========================================
 
-    promptInput.addEventListener(
-        "input",
-        () => {
+promptInput.addEventListener(
+    "input",
+    () => {
 
-            promptInput.style.height =
-                "auto";
+        promptInput.style.height =
+            "auto";
 
-            promptInput.style.height =
-                Math.min(
-                    promptInput.scrollHeight,
-                    180
-                ) + "px";
-        }
-    );
-}
+        promptInput.style.height =
+            Math.min(
+                promptInput.scrollHeight,
+                180
+            ) + "px";
+
+    }
+);
 
 
 // ========================================
 // MODEL SELECTOR
 // ========================================
 
-if (modelSelect) {
+modelSelect.addEventListener(
+    "change",
+    () => {
 
-    modelSelect.addEventListener(
-        "change",
-        () => {
+        const option =
+            modelSelect.options[
+                modelSelect.selectedIndex
+            ];
 
-            const option =
-                modelSelect.options[
-                    modelSelect.selectedIndex
-                ];
-
-            if (!option) {
-                return;
-            }
-
-            selectedModel.textContent =
-                option.text;
-
-            const conversation =
-                getCurrentConversation();
-
-            if (conversation) {
-
-                conversation.model =
-                    modelSelect.value;
-
-                conversation.updatedAt =
-                    new Date().toISOString();
-
-                saveConversations();
-            }
+        if (!option) {
+            return;
         }
-    );
-}
+
+        selectedModel.textContent =
+            option.text;
+
+        console.log(
+            "Selected SAPI model:",
+            modelSelect.value
+        );
+
+    }
+);
 
 
 // ========================================
@@ -501,574 +440,61 @@ document
                 promptInput.dispatchEvent(
                     new Event("input")
                 );
+
             }
         );
+
     });
 
 
 // ========================================
-// RENDER RECENT CHATS
+// ADD RECENT CHAT
 // ========================================
 
-function renderRecentChats() {
+function addRecentChat(text) {
 
     if (!recentChats) {
         return;
     }
 
-    recentChats.innerHTML = "";
-
-    const visibleChats =
-        conversations
-            .filter(
-                conversation =>
-                    !conversation.archived
-            )
-            .sort(
-                (a, b) => {
-
-                    if (
-                        a.pinned &&
-                        !b.pinned
-                    ) {
-                        return -1;
-                    }
-
-                    if (
-                        !a.pinned &&
-                        b.pinned
-                    ) {
-                        return 1;
-                    }
-
-                    return (
-                        new Date(
-                            b.updatedAt
-                        ) -
-                        new Date(
-                            a.updatedAt
-                        )
-                    );
-                }
-            )
-            .slice(0, 12);
-
-    if (visibleChats.length === 0) {
-
-        const empty =
-            document.createElement("div");
-
-        empty.className =
-            "empty-chats";
-
-        empty.textContent =
-            "No recent chats yet";
-
-        recentChats.appendChild(
-            empty
+    const item =
+        document.createElement(
+            "button"
         );
 
-        return;
-    }
+    item.className =
+        "chat-item";
 
-    visibleChats.forEach(
-        conversation => {
+    item.textContent =
+        text.length > 35
+            ? text.substring(0, 35) + "..."
+            : text;
 
-            const wrapper =
-                document.createElement("div");
-
-            wrapper.className =
-                "chat-item-wrapper";
-
-            // ========================================
-            // CHAT BUTTON
-            // ========================================
-
-            const item =
-                document.createElement("button");
-
-            item.type = "button";
-
-            item.className =
-                "chat-item";
-
-            if (
-                conversation.id ===
-                currentConversationId
-            ) {
-
-                item.classList.add(
-                    "active"
-                );
-            }
-
-            const title =
-                document.createElement("span");
-
-            title.className =
-                "chat-item-title";
-
-            title.textContent =
-                conversation.title;
-
-            item.appendChild(title);
-
-            if (conversation.pinned) {
-
-                const pin =
-                    document.createElement("span");
-
-                pin.className =
-                    "chat-pin";
-
-                pin.textContent =
-                    "📌";
-
-                item.appendChild(pin);
-            }
-
-            item.addEventListener(
-                "click",
-                () => {
-
-                    loadConversation(
-                        conversation.id
-                    );
-                }
-            );
-
-            // ========================================
-            // MENU BUTTON
-            // ========================================
-
-            const menuButton =
-                document.createElement("button");
-
-            menuButton.type =
-                "button";
-
-            menuButton.className =
-                "chat-menu-button";
-
-            menuButton.textContent =
-                "⋮";
-
-            menuButton.setAttribute(
-                "aria-label",
-                "Chat options"
-            );
-
-            menuButton.addEventListener(
-                "click",
-                event => {
-
-                    event.stopPropagation();
-
-                    toggleChatMenu(
-                        wrapper,
-                        conversation
-                    );
-                }
-            );
-
-            wrapper.appendChild(item);
-
-            wrapper.appendChild(
-                menuButton
-            );
-
-            recentChats.appendChild(
-                wrapper
-            );
-        }
-    );
-}
-
-
-// ========================================
-// CHAT MENU
-// ========================================
-
-function toggleChatMenu(
-    wrapper,
-    conversation
-) {
-
-    document
-        .querySelectorAll(".chat-menu")
-        .forEach(menu => {
-
-            menu.remove();
-        });
-
-    const menu =
-        document.createElement("div");
-
-    menu.className =
-        "chat-menu";
-
-    // ========================================
-    // RENAME
-    // ========================================
-
-    const rename =
-        document.createElement("button");
-
-    rename.type = "button";
-
-    rename.textContent =
-        "✏️ Rename";
-
-    rename.addEventListener(
+    item.addEventListener(
         "click",
-        event => {
+        () => {
 
-            event.stopPropagation();
+            promptInput.value =
+                text;
 
-            renameConversation(
-                conversation.id
-            );
+            promptInput.focus();
 
-            menu.remove();
         }
     );
 
-    // ========================================
-    // PIN
-    // ========================================
-
-    const pin =
-        document.createElement("button");
-
-    pin.type = "button";
-
-    pin.textContent =
-        conversation.pinned
-            ? "📌 Unpin"
-            : "📌 Pin";
-
-    pin.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            togglePinConversation(
-                conversation.id
-            );
-
-            menu.remove();
-        }
+    recentChats.prepend(
+        item
     );
 
-    // ========================================
-    // ARCHIVE
-    // ========================================
 
-    const archive =
-        document.createElement("button");
-
-    archive.type = "button";
-
-    archive.textContent =
-        "📦 Archive";
-
-    archive.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            archiveConversation(
-                conversation.id
-            );
-
-            menu.remove();
-        }
-    );
-
-    // ========================================
-    // DELETE
-    // ========================================
-
-    const remove =
-        document.createElement("button");
-
-    remove.type = "button";
-
-    remove.className =
-        "danger";
-
-    remove.textContent =
-        "🗑️ Delete";
-
-    remove.addEventListener(
-        "click",
-        event => {
-
-            event.stopPropagation();
-
-            deleteConversation(
-                conversation.id
-            );
-
-            menu.remove();
-        }
-    );
-
-    menu.appendChild(rename);
-    menu.appendChild(pin);
-    menu.appendChild(archive);
-    menu.appendChild(remove);
-
-    wrapper.appendChild(menu);
-}
-
-
-// ========================================
-// RENAME CONVERSATION
-// ========================================
-
-function renameConversation(
-    conversationId
-) {
-
-    const conversation =
-        conversations.find(
-            chat =>
-                chat.id ===
-                conversationId
-        );
-
-    if (!conversation) {
-        return;
-    }
-
-    const newTitle =
-        window.prompt(
-            "Rename chat:",
-            conversation.title
-        );
-
-    if (newTitle === null) {
-        return;
-    }
-
-    const cleanTitle =
-        newTitle.trim();
-
-    if (!cleanTitle) {
-        return;
-    }
-
-    conversation.title =
-        cleanTitle.substring(
-            0,
-            60
-        );
-
-    conversation.updatedAt =
-        new Date().toISOString();
-
-    saveConversations();
-
-    renderRecentChats();
-}
-
-
-// ========================================
-// PIN / UNPIN
-// ========================================
-
-function togglePinConversation(
-    conversationId
-) {
-
-    const conversation =
-        conversations.find(
-            chat =>
-                chat.id ===
-                conversationId
-        );
-
-    if (!conversation) {
-        return;
-    }
-
-    conversation.pinned =
-        !conversation.pinned;
-
-    conversation.updatedAt =
-        new Date().toISOString();
-
-    saveConversations();
-
-    renderRecentChats();
-}
-
-
-// ========================================
-// ARCHIVE
-// ========================================
-
-function archiveConversation(
-    conversationId
-) {
-
-    const conversation =
-        conversations.find(
-            chat =>
-                chat.id ===
-                conversationId
-        );
-
-    if (!conversation) {
-        return;
-    }
-
-    conversation.archived =
-        true;
-
-    conversation.updatedAt =
-        new Date().toISOString();
-
-    saveConversations();
-
-    if (
-        currentConversationId ===
-        conversationId
+    while (
+        recentChats.children.length > 8
     ) {
 
-        currentConversationId =
-            null;
+        recentChats.lastElementChild
+            .remove();
 
-        messages.innerHTML = "";
-
-        welcome.style.display =
-            "flex";
     }
-
-    renderRecentChats();
-}
-
-
-// ========================================
-// DELETE
-// ========================================
-
-function deleteConversation(
-    conversationId
-) {
-
-    const conversation =
-        conversations.find(
-            chat =>
-                chat.id ===
-                conversationId
-        );
-
-    if (!conversation) {
-        return;
-    }
-
-    const confirmed =
-        window.confirm(
-            `Delete "${conversation.title}"?`
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    conversations =
-        conversations.filter(
-            chat =>
-                chat.id !==
-                conversationId
-        );
-
-    saveConversations();
-
-    if (
-        currentConversationId ===
-        conversationId
-    ) {
-
-        currentConversationId =
-            null;
-
-        messages.innerHTML = "";
-
-        welcome.style.display =
-            "flex";
-    }
-
-    renderRecentChats();
-}
-
-
-// ========================================
-// LOAD CONVERSATION
-// ========================================
-
-function loadConversation(
-    conversationId
-) {
-
-    const conversation =
-        conversations.find(
-            chat =>
-                chat.id ===
-                conversationId
-        );
-
-    if (!conversation) {
-        return;
-    }
-
-    currentConversationId =
-        conversation.id;
-
-    messages.innerHTML = "";
-
-    welcome.style.display =
-        "none";
-
-    conversation.messages.forEach(
-        message => {
-
-            addMessage(
-                message.text,
-                message.sender,
-                false
-            );
-        }
-    );
-
-    const modelOption =
-        Array.from(
-            modelSelect.options
-        ).find(
-            option =>
-                option.value ===
-                conversation.model
-        );
-
-    if (modelOption) {
-
-        modelSelect.value =
-            conversation.model;
-
-        selectedModel.textContent =
-            modelOption.text;
-    }
-
-    renderRecentChats();
-
-    messages.scrollTop =
-        messages.scrollHeight;
-
-    closeMobileMenu();
 }
 
 
@@ -1076,89 +502,80 @@ function loadConversation(
 // NEW CHAT
 // ========================================
 
-if (newChat) {
+newChat.addEventListener(
+    "click",
+    () => {
 
-    newChat.addEventListener(
-        "click",
-        () => {
+        messages.innerHTML =
+            "";
 
-            currentConversationId =
-                null;
+        welcome.style.display =
+            "flex";
 
-            messages.innerHTML = "";
+        promptInput.value =
+            "";
 
-            welcome.style.display =
-                "flex";
+        promptInput.style.height =
+            "auto";
 
-            promptInput.value = "";
+        promptInput.focus();
 
-            promptInput.style.height =
-                "auto";
-
-            renderRecentChats();
-
-            promptInput.focus();
-
-            closeMobileMenu();
-        }
-    );
-}
+    }
+);
 
 
 // ========================================
 // MOBILE MENU
 // ========================================
 
-if (mobileMenu) {
+mobileMenu.addEventListener(
+    "click",
+    () => {
 
-    mobileMenu.addEventListener(
-        "click",
-        () => {
+        sidebar.classList.add(
+            "open"
+        );
 
-            sidebar.classList.add(
-                "open"
-            );
+        overlay.classList.add(
+            "show"
+        );
 
-            overlay.classList.add(
-                "show"
-            );
-        }
-    );
-}
+    }
+);
 
 
 // ========================================
 // CLOSE MOBILE MENU
 // ========================================
 
-function closeMobileMenu() {
+overlay.addEventListener(
+    "click",
+    () => {
 
-    sidebar.classList.remove(
-        "open"
-    );
+        sidebar.classList.remove(
+            "open"
+        );
 
-    overlay.classList.remove(
-        "show"
-    );
-}
+        overlay.classList.remove(
+            "show"
+        );
 
-if (overlay) {
-
-    overlay.addEventListener(
-        "click",
-        closeMobileMenu
-    );
-}
+    }
+);
 
 
 // ========================================
-// MODEL OPTION
+// CREATE MODEL OPTION
 // ========================================
 
-function createModelOption(model) {
+function createModelOption(
+    model
+) {
 
     const option =
-        document.createElement("option");
+        document.createElement(
+            "option"
+        );
 
     option.value =
         model.id;
@@ -1170,6 +587,9 @@ function createModelOption(model) {
                 ? " • Connected"
                 : " • Coming soon"
         );
+
+    option.disabled =
+        false;
 
     return option;
 }
@@ -1200,7 +620,9 @@ async function loadModels() {
 
         if (
             !data.models ||
-            !Array.isArray(data.models)
+            !Array.isArray(
+                data.models
+            )
         ) {
 
             throw new Error(
@@ -1208,9 +630,13 @@ async function loadModels() {
             );
         }
 
-        modelSelect.innerHTML = "";
+
+        modelSelect.innerHTML =
+            "";
+
 
         const groups = {};
+
 
         data.models.forEach(
             model => {
@@ -1224,13 +650,18 @@ async function loadModels() {
                     groups[
                         model.provider
                     ] = [];
+
                 }
 
                 groups[
                     model.provider
-                ].push(model);
+                ].push(
+                    model
+                );
+
             }
         );
+
 
         Object.entries(groups)
             .forEach(
@@ -1244,6 +675,7 @@ async function loadModels() {
                     group.label =
                         provider;
 
+
                     providerModels.forEach(
                         model => {
 
@@ -1252,49 +684,39 @@ async function loadModels() {
                                     model
                                 )
                             );
+
                         }
                     );
+
 
                     modelSelect.appendChild(
                         group
                     );
+
                 }
             );
 
-        if (
-            currentConversationId
-        ) {
-
-            const conversation =
-                getCurrentConversation();
-
-            if (conversation) {
-
-                modelSelect.value =
-                    conversation.model;
-            }
-        }
 
         if (
-            !modelSelect.value &&
             modelSelect.options.length
         ) {
 
             modelSelect.selectedIndex =
                 0;
-        }
-
-        if (
-            modelSelect.options.length
-        ) {
 
             selectedModel.textContent =
                 modelSelect
-                    .options[
-                        modelSelect.selectedIndex
-                    ]
+                    .options[0]
                     .text;
+
         }
+
+
+        console.log(
+            "SAPI models loaded:",
+            data.models
+        );
+
 
     } catch (error) {
 
@@ -1302,35 +724,17 @@ async function loadModels() {
             "Could not load SAPI models:",
             error
         );
+
     }
 }
 
 
 // ========================================
-// CLOSE OPEN CHAT MENUS
+// START
 // ========================================
-
-document.addEventListener(
-    "click",
-    () => {
-
-        document
-            .querySelectorAll(".chat-menu")
-            .forEach(menu => {
-
-                menu.remove();
-            });
-    }
-);
-
-
-// ========================================
-// START SAPI
-// ========================================
-
-renderRecentChats();
 
 loadModels();
+
 
 console.log(
     "================================"
@@ -1350,15 +754,7 @@ console.log(
 );
 
 console.log(
-    "Conversation history: ENABLED"
-);
-
-console.log(
-    "Chat management: ENABLED"
-);
-
-console.log(
-    "Storage: Browser localStorage"
+    "Model router: CONNECTED"
 );
 
 console.log(
