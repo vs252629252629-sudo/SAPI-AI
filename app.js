@@ -24,14 +24,23 @@ const mobileMenu = document.getElementById("mobileMenu");
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 
-
 // ========================================
 // STATE
 // ========================================
 
-let conversations = JSON.parse(
-    localStorage.getItem("sapi_conversations") || "[]"
-);
+let conversations = [];
+
+try {
+    conversations = JSON.parse(
+        localStorage.getItem("sapi_conversations") || "[]"
+    );
+
+    if (!Array.isArray(conversations)) {
+        conversations = [];
+    }
+} catch {
+    conversations = [];
+}
 
 let currentConversationId = null;
 
@@ -43,11 +52,8 @@ let currentConversationId = null;
 const particles = document.getElementById("particles");
 
 if (particles) {
-
     for (let i = 0; i < 45; i++) {
-
-        const particle =
-            document.createElement("span");
+        const particle = document.createElement("span");
 
         particle.className = "particle";
 
@@ -69,11 +75,10 @@ if (particles) {
 
 
 // ========================================
-// SAVE CONVERSATIONS
+// STORAGE
 // ========================================
 
 function saveConversations() {
-
     localStorage.setItem(
         "sapi_conversations",
         JSON.stringify(conversations)
@@ -88,9 +93,7 @@ function saveConversations() {
 function createConversation(firstMessage = "New Chat") {
 
     const conversation = {
-
-        id:
-            Date.now().toString(),
+        id: Date.now().toString(),
 
         title:
             firstMessage.length > 40
@@ -98,9 +101,13 @@ function createConversation(firstMessage = "New Chat") {
                 : firstMessage,
 
         model:
-            modelSelect.value,
+            modelSelect.value || "google-gemini",
 
         messages: [],
+
+        pinned: false,
+
+        archived: false,
 
         createdAt:
             new Date().toISOString(),
@@ -149,7 +156,6 @@ function saveMessageToConversation(
         getCurrentConversation();
 
     if (!conversation) {
-
         conversation =
             createConversation(text);
     }
@@ -177,7 +183,7 @@ function saveMessageToConversation(
 
 
 // ========================================
-// ADD MESSAGE TO UI
+// ADD MESSAGE
 // ========================================
 
 function addMessage(
@@ -186,8 +192,9 @@ function addMessage(
     save = true
 ) {
 
-    welcome.style.display =
-        "none";
+    if (welcome) {
+        welcome.style.display = "none";
+    }
 
     const message =
         document.createElement("div");
@@ -223,21 +230,13 @@ function addMessage(
     messageText.textContent =
         text;
 
-    content.appendChild(
-        messageText
-    );
+    content.appendChild(messageText);
 
-    message.appendChild(
-        avatar
-    );
+    message.appendChild(avatar);
 
-    message.appendChild(
-        content
-    );
+    message.appendChild(content);
 
-    messages.appendChild(
-        message
-    );
+    messages.appendChild(message);
 
     messages.scrollTop =
         messages.scrollHeight;
@@ -346,7 +345,6 @@ async function sendMessage() {
         loading.remove();
 
         if (!response.ok) {
-
             throw new Error(
                 data.error ||
                 "SAPI backend error."
@@ -359,9 +357,7 @@ async function sendMessage() {
             "ai"
         );
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "SAPI Error:",
@@ -374,9 +370,8 @@ async function sendMessage() {
             "SAPI couldn't reach the backend right now. Please try again.",
             "ai"
         );
-    }
 
-    finally {
+    } finally {
 
         sendButton.disabled =
             false;
@@ -390,85 +385,97 @@ async function sendMessage() {
 // SEND BUTTON
 // ========================================
 
-sendButton.addEventListener(
-    "click",
-    sendMessage
-);
+if (sendButton) {
+
+    sendButton.addEventListener(
+        "click",
+        sendMessage
+    );
+}
 
 
 // ========================================
 // ENTER TO SEND
 // ========================================
 
-promptInput.addEventListener(
-    "keydown",
-    event => {
+if (promptInput) {
 
-        if (
-            event.key === "Enter" &&
-            !event.shiftKey
-        ) {
+    promptInput.addEventListener(
+        "keydown",
+        event => {
 
-            event.preventDefault();
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
 
-            sendMessage();
+                event.preventDefault();
+
+                sendMessage();
+            }
         }
-    }
-);
+    );
 
 
-// ========================================
-// AUTO RESIZE INPUT
-// ========================================
+    // ========================================
+    // AUTO RESIZE
+    // ========================================
 
-promptInput.addEventListener(
-    "input",
-    () => {
+    promptInput.addEventListener(
+        "input",
+        () => {
 
-        promptInput.style.height =
-            "auto";
+            promptInput.style.height =
+                "auto";
 
-        promptInput.style.height =
-            Math.min(
-                promptInput.scrollHeight,
-                180
-            ) + "px";
-    }
-);
+            promptInput.style.height =
+                Math.min(
+                    promptInput.scrollHeight,
+                    180
+                ) + "px";
+        }
+    );
+}
 
 
 // ========================================
 // MODEL SELECTOR
 // ========================================
 
-modelSelect.addEventListener(
-    "change",
-    () => {
+if (modelSelect) {
 
-        const option =
-            modelSelect.options[
-                modelSelect.selectedIndex
-            ];
+    modelSelect.addEventListener(
+        "change",
+        () => {
 
-        if (!option) {
-            return;
+            const option =
+                modelSelect.options[
+                    modelSelect.selectedIndex
+                ];
+
+            if (!option) {
+                return;
+            }
+
+            selectedModel.textContent =
+                option.text;
+
+            const conversation =
+                getCurrentConversation();
+
+            if (conversation) {
+
+                conversation.model =
+                    modelSelect.value;
+
+                conversation.updatedAt =
+                    new Date().toISOString();
+
+                saveConversations();
+            }
         }
-
-        selectedModel.textContent =
-            option.text;
-
-        const conversation =
-            getCurrentConversation();
-
-        if (conversation) {
-
-            conversation.model =
-                modelSelect.value;
-
-            saveConversations();
-        }
-    }
-);
+    );
+}
 
 
 // ========================================
@@ -511,18 +518,79 @@ function renderRecentChats() {
 
     recentChats.innerHTML = "";
 
-    conversations
-        .slice(0, 8)
-        .forEach(conversation => {
+    const visibleChats =
+        conversations
+            .filter(
+                conversation =>
+                    !conversation.archived
+            )
+            .sort(
+                (a, b) => {
+
+                    if (
+                        a.pinned &&
+                        !b.pinned
+                    ) {
+                        return -1;
+                    }
+
+                    if (
+                        !a.pinned &&
+                        b.pinned
+                    ) {
+                        return 1;
+                    }
+
+                    return (
+                        new Date(
+                            b.updatedAt
+                        ) -
+                        new Date(
+                            a.updatedAt
+                        )
+                    );
+                }
+            )
+            .slice(0, 12);
+
+    if (visibleChats.length === 0) {
+
+        const empty =
+            document.createElement("div");
+
+        empty.className =
+            "empty-chats";
+
+        empty.textContent =
+            "No recent chats yet";
+
+        recentChats.appendChild(
+            empty
+        );
+
+        return;
+    }
+
+    visibleChats.forEach(
+        conversation => {
+
+            const wrapper =
+                document.createElement("div");
+
+            wrapper.className =
+                "chat-item-wrapper";
+
+            // ========================================
+            // CHAT BUTTON
+            // ========================================
 
             const item =
                 document.createElement("button");
 
+            item.type = "button";
+
             item.className =
                 "chat-item";
-
-            item.textContent =
-                conversation.title;
 
             if (
                 conversation.id ===
@@ -532,6 +600,31 @@ function renderRecentChats() {
                 item.classList.add(
                     "active"
                 );
+            }
+
+            const title =
+                document.createElement("span");
+
+            title.className =
+                "chat-item-title";
+
+            title.textContent =
+                conversation.title;
+
+            item.appendChild(title);
+
+            if (conversation.pinned) {
+
+                const pin =
+                    document.createElement("span");
+
+                pin.className =
+                    "chat-pin";
+
+                pin.textContent =
+                    "📌";
+
+                item.appendChild(pin);
             }
 
             item.addEventListener(
@@ -544,10 +637,373 @@ function renderRecentChats() {
                 }
             );
 
-            recentChats.appendChild(
-                item
+            // ========================================
+            // MENU BUTTON
+            // ========================================
+
+            const menuButton =
+                document.createElement("button");
+
+            menuButton.type =
+                "button";
+
+            menuButton.className =
+                "chat-menu-button";
+
+            menuButton.textContent =
+                "⋮";
+
+            menuButton.setAttribute(
+                "aria-label",
+                "Chat options"
             );
+
+            menuButton.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    toggleChatMenu(
+                        wrapper,
+                        conversation
+                    );
+                }
+            );
+
+            wrapper.appendChild(item);
+
+            wrapper.appendChild(
+                menuButton
+            );
+
+            recentChats.appendChild(
+                wrapper
+            );
+        }
+    );
+}
+
+
+// ========================================
+// CHAT MENU
+// ========================================
+
+function toggleChatMenu(
+    wrapper,
+    conversation
+) {
+
+    document
+        .querySelectorAll(".chat-menu")
+        .forEach(menu => {
+
+            menu.remove();
         });
+
+    const menu =
+        document.createElement("div");
+
+    menu.className =
+        "chat-menu";
+
+    // ========================================
+    // RENAME
+    // ========================================
+
+    const rename =
+        document.createElement("button");
+
+    rename.type = "button";
+
+    rename.textContent =
+        "✏️ Rename";
+
+    rename.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            renameConversation(
+                conversation.id
+            );
+
+            menu.remove();
+        }
+    );
+
+    // ========================================
+    // PIN
+    // ========================================
+
+    const pin =
+        document.createElement("button");
+
+    pin.type = "button";
+
+    pin.textContent =
+        conversation.pinned
+            ? "📌 Unpin"
+            : "📌 Pin";
+
+    pin.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            togglePinConversation(
+                conversation.id
+            );
+
+            menu.remove();
+        }
+    );
+
+    // ========================================
+    // ARCHIVE
+    // ========================================
+
+    const archive =
+        document.createElement("button");
+
+    archive.type = "button";
+
+    archive.textContent =
+        "📦 Archive";
+
+    archive.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            archiveConversation(
+                conversation.id
+            );
+
+            menu.remove();
+        }
+    );
+
+    // ========================================
+    // DELETE
+    // ========================================
+
+    const remove =
+        document.createElement("button");
+
+    remove.type = "button";
+
+    remove.className =
+        "danger";
+
+    remove.textContent =
+        "🗑️ Delete";
+
+    remove.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            deleteConversation(
+                conversation.id
+            );
+
+            menu.remove();
+        }
+    );
+
+    menu.appendChild(rename);
+    menu.appendChild(pin);
+    menu.appendChild(archive);
+    menu.appendChild(remove);
+
+    wrapper.appendChild(menu);
+}
+
+
+// ========================================
+// RENAME CONVERSATION
+// ========================================
+
+function renameConversation(
+    conversationId
+) {
+
+    const conversation =
+        conversations.find(
+            chat =>
+                chat.id ===
+                conversationId
+        );
+
+    if (!conversation) {
+        return;
+    }
+
+    const newTitle =
+        window.prompt(
+            "Rename chat:",
+            conversation.title
+        );
+
+    if (newTitle === null) {
+        return;
+    }
+
+    const cleanTitle =
+        newTitle.trim();
+
+    if (!cleanTitle) {
+        return;
+    }
+
+    conversation.title =
+        cleanTitle.substring(
+            0,
+            60
+        );
+
+    conversation.updatedAt =
+        new Date().toISOString();
+
+    saveConversations();
+
+    renderRecentChats();
+}
+
+
+// ========================================
+// PIN / UNPIN
+// ========================================
+
+function togglePinConversation(
+    conversationId
+) {
+
+    const conversation =
+        conversations.find(
+            chat =>
+                chat.id ===
+                conversationId
+        );
+
+    if (!conversation) {
+        return;
+    }
+
+    conversation.pinned =
+        !conversation.pinned;
+
+    conversation.updatedAt =
+        new Date().toISOString();
+
+    saveConversations();
+
+    renderRecentChats();
+}
+
+
+// ========================================
+// ARCHIVE
+// ========================================
+
+function archiveConversation(
+    conversationId
+) {
+
+    const conversation =
+        conversations.find(
+            chat =>
+                chat.id ===
+                conversationId
+        );
+
+    if (!conversation) {
+        return;
+    }
+
+    conversation.archived =
+        true;
+
+    conversation.updatedAt =
+        new Date().toISOString();
+
+    saveConversations();
+
+    if (
+        currentConversationId ===
+        conversationId
+    ) {
+
+        currentConversationId =
+            null;
+
+        messages.innerHTML = "";
+
+        welcome.style.display =
+            "flex";
+    }
+
+    renderRecentChats();
+}
+
+
+// ========================================
+// DELETE
+// ========================================
+
+function deleteConversation(
+    conversationId
+) {
+
+    const conversation =
+        conversations.find(
+            chat =>
+                chat.id ===
+                conversationId
+        );
+
+    if (!conversation) {
+        return;
+    }
+
+    const confirmed =
+        window.confirm(
+            `Delete "${conversation.title}"?`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    conversations =
+        conversations.filter(
+            chat =>
+                chat.id !==
+                conversationId
+        );
+
+    saveConversations();
+
+    if (
+        currentConversationId ===
+        conversationId
+    ) {
+
+        currentConversationId =
+            null;
+
+        messages.innerHTML = "";
+
+        welcome.style.display =
+            "flex";
+    }
+
+    renderRecentChats();
 }
 
 
@@ -561,8 +1017,8 @@ function loadConversation(
 
     const conversation =
         conversations.find(
-            item =>
-                item.id ===
+            chat =>
+                chat.id ===
                 conversationId
         );
 
@@ -620,49 +1076,55 @@ function loadConversation(
 // NEW CHAT
 // ========================================
 
-newChat.addEventListener(
-    "click",
-    () => {
+if (newChat) {
 
-        currentConversationId =
-            null;
+    newChat.addEventListener(
+        "click",
+        () => {
 
-        messages.innerHTML = "";
+            currentConversationId =
+                null;
 
-        welcome.style.display =
-            "flex";
+            messages.innerHTML = "";
 
-        promptInput.value = "";
+            welcome.style.display =
+                "flex";
 
-        promptInput.style.height =
-            "auto";
+            promptInput.value = "";
 
-        renderRecentChats();
+            promptInput.style.height =
+                "auto";
 
-        promptInput.focus();
+            renderRecentChats();
 
-        closeMobileMenu();
-    }
-);
+            promptInput.focus();
+
+            closeMobileMenu();
+        }
+    );
+}
 
 
 // ========================================
 // MOBILE MENU
 // ========================================
 
-mobileMenu.addEventListener(
-    "click",
-    () => {
+if (mobileMenu) {
 
-        sidebar.classList.add(
-            "open"
-        );
+    mobileMenu.addEventListener(
+        "click",
+        () => {
 
-        overlay.classList.add(
-            "show"
-        );
-    }
-);
+            sidebar.classList.add(
+                "open"
+            );
+
+            overlay.classList.add(
+                "show"
+            );
+        }
+    );
+}
 
 
 // ========================================
@@ -680,14 +1142,17 @@ function closeMobileMenu() {
     );
 }
 
-overlay.addEventListener(
-    "click",
-    closeMobileMenu
-);
+if (overlay) {
+
+    overlay.addEventListener(
+        "click",
+        closeMobileMenu
+    );
+}
 
 
 // ========================================
-// CREATE MODEL OPTION
+// MODEL OPTION
 // ========================================
 
 function createModelOption(model) {
@@ -796,26 +1261,32 @@ async function loadModels() {
                 }
             );
 
-        const savedConversation =
-            getCurrentConversation();
+        if (
+            currentConversationId
+        ) {
 
-        if (savedConversation) {
+            const conversation =
+                getCurrentConversation();
 
-            modelSelect.value =
-                savedConversation.model;
+            if (conversation) {
+
+                modelSelect.value =
+                    conversation.model;
+            }
+        }
+
+        if (
+            !modelSelect.value &&
+            modelSelect.options.length
+        ) {
+
+            modelSelect.selectedIndex =
+                0;
         }
 
         if (
             modelSelect.options.length
         ) {
-
-            if (
-                !modelSelect.value
-            ) {
-
-                modelSelect.selectedIndex =
-                    0;
-            }
 
             selectedModel.textContent =
                 modelSelect
@@ -825,9 +1296,7 @@ async function loadModels() {
                     .text;
         }
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.warn(
             "Could not load SAPI models:",
@@ -838,24 +1307,21 @@ async function loadModels() {
 
 
 // ========================================
-// RESTORE LAST CHAT
+// CLOSE OPEN CHAT MENUS
 // ========================================
 
-function restoreLastConversation() {
+document.addEventListener(
+    "click",
+    () => {
 
-    if (
-        conversations.length === 0
-    ) {
-        return;
+        document
+            .querySelectorAll(".chat-menu")
+            .forEach(menu => {
+
+                menu.remove();
+            });
     }
-
-    const latest =
-        conversations[0];
-
-    loadConversation(
-        latest.id
-    );
-}
+);
 
 
 // ========================================
@@ -885,6 +1351,10 @@ console.log(
 
 console.log(
     "Conversation history: ENABLED"
+);
+
+console.log(
+    "Chat management: ENABLED"
 );
 
 console.log(
