@@ -5,7 +5,6 @@
 
 const API_URL = "https://sapi-ai.onrender.com";
 
-
 // ========================================
 // ELEMENTS
 // ========================================
@@ -27,6 +26,17 @@ const overlay = document.getElementById("overlay");
 
 
 // ========================================
+// STATE
+// ========================================
+
+let conversations = JSON.parse(
+    localStorage.getItem("sapi_conversations") || "[]"
+);
+
+let currentConversationId = null;
+
+
+// ========================================
 // PARTICLES
 // ========================================
 
@@ -36,7 +46,8 @@ if (particles) {
 
     for (let i = 0; i < 45; i++) {
 
-        const particle = document.createElement("span");
+        const particle =
+            document.createElement("span");
 
         particle.className = "particle";
 
@@ -54,27 +65,140 @@ if (particles) {
 
         particles.appendChild(particle);
     }
-
 }
 
 
 // ========================================
-// ADD MESSAGE
+// SAVE CONVERSATIONS
 // ========================================
 
-function addMessage(text, sender = "ai") {
+function saveConversations() {
 
-    welcome.style.display = "none";
+    localStorage.setItem(
+        "sapi_conversations",
+        JSON.stringify(conversations)
+    );
+}
 
-    const message = document.createElement("div");
+
+// ========================================
+// CREATE CONVERSATION
+// ========================================
+
+function createConversation(firstMessage = "New Chat") {
+
+    const conversation = {
+
+        id:
+            Date.now().toString(),
+
+        title:
+            firstMessage.length > 40
+                ? firstMessage.substring(0, 40) + "..."
+                : firstMessage,
+
+        model:
+            modelSelect.value,
+
+        messages: [],
+
+        createdAt:
+            new Date().toISOString(),
+
+        updatedAt:
+            new Date().toISOString()
+    };
+
+    conversations.unshift(conversation);
+
+    currentConversationId =
+        conversation.id;
+
+    saveConversations();
+
+    renderRecentChats();
+
+    return conversation;
+}
+
+
+// ========================================
+// GET CURRENT CONVERSATION
+// ========================================
+
+function getCurrentConversation() {
+
+    return conversations.find(
+        conversation =>
+            conversation.id ===
+            currentConversationId
+    );
+}
+
+
+// ========================================
+// SAVE MESSAGE
+// ========================================
+
+function saveMessageToConversation(
+    text,
+    sender
+) {
+
+    let conversation =
+        getCurrentConversation();
+
+    if (!conversation) {
+
+        conversation =
+            createConversation(text);
+    }
+
+    conversation.messages.push({
+
+        id:
+            Date.now().toString(),
+
+        sender,
+
+        text,
+
+        timestamp:
+            new Date().toISOString()
+    });
+
+    conversation.updatedAt =
+        new Date().toISOString();
+
+    saveConversations();
+
+    renderRecentChats();
+}
+
+
+// ========================================
+// ADD MESSAGE TO UI
+// ========================================
+
+function addMessage(
+    text,
+    sender = "ai",
+    save = true
+) {
+
+    welcome.style.display =
+        "none";
+
+    const message =
+        document.createElement("div");
 
     message.className =
         sender === "user"
             ? "message user-message"
             : "message ai-message";
 
-
-    const avatar = document.createElement("div");
+    const avatar =
+        document.createElement("div");
 
     avatar.className =
         "message-avatar";
@@ -84,12 +208,11 @@ function addMessage(text, sender = "ai") {
             ? "U"
             : "S";
 
-
-    const content = document.createElement("div");
+    const content =
+        document.createElement("div");
 
     content.className =
         "message-content";
-
 
     const messageText =
         document.createElement("div");
@@ -99,7 +222,6 @@ function addMessage(text, sender = "ai") {
 
     messageText.textContent =
         text;
-
 
     content.appendChild(
         messageText
@@ -117,10 +239,16 @@ function addMessage(text, sender = "ai") {
         message
     );
 
-
     messages.scrollTop =
         messages.scrollHeight;
 
+    if (save) {
+
+        saveMessageToConversation(
+            text,
+            sender
+        );
+    }
 }
 
 
@@ -136,7 +264,6 @@ function addLoadingMessage() {
     loading.className =
         "message ai-message";
 
-
     loading.innerHTML = `
         <div class="message-avatar">S</div>
 
@@ -149,18 +276,14 @@ function addLoadingMessage() {
         </div>
     `;
 
-
     messages.appendChild(
         loading
     );
 
-
     messages.scrollTop =
         messages.scrollHeight;
 
-
     return loading;
-
 }
 
 
@@ -173,38 +296,28 @@ async function sendMessage() {
     const text =
         promptInput.value.trim();
 
-
     if (!text) {
         return;
     }
 
-
     const model =
         modelSelect.value;
 
-
-    // Show user message
     addMessage(
         text,
         "user"
     );
 
-
-    // Clear input
     promptInput.value = "";
 
     promptInput.style.height =
         "auto";
 
-
-    // Disable send
     sendButton.disabled =
         true;
 
-
     const loading =
         addLoadingMessage();
-
 
     try {
 
@@ -219,24 +332,18 @@ async function sendMessage() {
                             "application/json"
                     },
 
-                    body: JSON.stringify({
-
-                        message: text,
-
-                        model: model
-
-                    })
-
+                    body:
+                        JSON.stringify({
+                            message: text,
+                            model: model
+                        })
                 }
             );
-
 
         const data =
             await response.json();
 
-
         loading.remove();
-
 
         if (!response.ok) {
 
@@ -244,21 +351,13 @@ async function sendMessage() {
                 data.error ||
                 "SAPI backend error."
             );
-
         }
 
-
-        // Show response
         addMessage(
             data.response ||
             "SAPI returned an empty response.",
             "ai"
         );
-
-
-        // Add chat to recent list
-        addRecentChat(text);
-
 
     }
 
@@ -269,17 +368,13 @@ async function sendMessage() {
             error
         );
 
-
         loading.remove();
-
 
         addMessage(
             "SAPI couldn't reach the backend right now. Please try again.",
             "ai"
         );
-
     }
-
 
     finally {
 
@@ -287,9 +382,7 @@ async function sendMessage() {
             false;
 
         promptInput.focus();
-
     }
-
 }
 
 
@@ -309,7 +402,7 @@ sendButton.addEventListener(
 
 promptInput.addEventListener(
     "keydown",
-    (event) => {
+    event => {
 
         if (
             event.key === "Enter" &&
@@ -319,9 +412,7 @@ promptInput.addEventListener(
             event.preventDefault();
 
             sendMessage();
-
         }
-
     }
 );
 
@@ -342,7 +433,6 @@ promptInput.addEventListener(
                 promptInput.scrollHeight,
                 180
             ) + "px";
-
     }
 );
 
@@ -360,21 +450,23 @@ modelSelect.addEventListener(
                 modelSelect.selectedIndex
             ];
 
-
         if (!option) {
             return;
         }
 
-
         selectedModel.textContent =
             option.text;
 
+        const conversation =
+            getCurrentConversation();
 
-        console.log(
-            "Selected SAPI model:",
-            modelSelect.value
-        );
+        if (conversation) {
 
+            conversation.model =
+                modelSelect.value;
+
+            saveConversations();
+        }
     }
 );
 
@@ -394,75 +486,133 @@ document
                 const prompt =
                     card.dataset.prompt;
 
-
                 promptInput.value =
                     prompt;
 
-
                 promptInput.focus();
-
 
                 promptInput.dispatchEvent(
                     new Event("input")
                 );
-
             }
         );
-
     });
 
 
 // ========================================
-// ADD RECENT CHAT
+// RENDER RECENT CHATS
 // ========================================
 
-function addRecentChat(text) {
+function renderRecentChats() {
 
     if (!recentChats) {
         return;
     }
 
+    recentChats.innerHTML = "";
 
-    const item =
-        document.createElement("button");
+    conversations
+        .slice(0, 8)
+        .forEach(conversation => {
 
-    item.className =
-        "chat-item";
+            const item =
+                document.createElement("button");
+
+            item.className =
+                "chat-item";
+
+            item.textContent =
+                conversation.title;
+
+            if (
+                conversation.id ===
+                currentConversationId
+            ) {
+
+                item.classList.add(
+                    "active"
+                );
+            }
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    loadConversation(
+                        conversation.id
+                    );
+                }
+            );
+
+            recentChats.appendChild(
+                item
+            );
+        });
+}
 
 
-    item.textContent =
-        text.length > 35
-            ? text.substring(0, 35) + "..."
-            : text;
+// ========================================
+// LOAD CONVERSATION
+// ========================================
 
+function loadConversation(
+    conversationId
+) {
 
-    item.addEventListener(
-        "click",
-        () => {
+    const conversation =
+        conversations.find(
+            item =>
+                item.id ===
+                conversationId
+        );
 
-            promptInput.value =
-                text;
+    if (!conversation) {
+        return;
+    }
 
-            promptInput.focus();
+    currentConversationId =
+        conversation.id;
 
+    messages.innerHTML = "";
+
+    welcome.style.display =
+        "none";
+
+    conversation.messages.forEach(
+        message => {
+
+            addMessage(
+                message.text,
+                message.sender,
+                false
+            );
         }
     );
 
+    const modelOption =
+        Array.from(
+            modelSelect.options
+        ).find(
+            option =>
+                option.value ===
+                conversation.model
+        );
 
-    recentChats.prepend(
-        item
-    );
+    if (modelOption) {
 
+        modelSelect.value =
+            conversation.model;
 
-    // Keep only the latest 8 chats
-    while (
-        recentChats.children.length > 8
-    ) {
-
-        recentChats.lastElementChild.remove();
-
+        selectedModel.textContent =
+            modelOption.text;
     }
 
+    renderRecentChats();
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+    closeMobileMenu();
 }
 
 
@@ -474,20 +624,24 @@ newChat.addEventListener(
     "click",
     () => {
 
-        messages.innerHTML =
-            "";
+        currentConversationId =
+            null;
+
+        messages.innerHTML = "";
 
         welcome.style.display =
             "flex";
 
-        promptInput.value =
-            "";
+        promptInput.value = "";
 
         promptInput.style.height =
             "auto";
 
+        renderRecentChats();
+
         promptInput.focus();
 
+        closeMobileMenu();
     }
 );
 
@@ -507,7 +661,6 @@ mobileMenu.addEventListener(
         overlay.classList.add(
             "show"
         );
-
     }
 );
 
@@ -516,19 +669,20 @@ mobileMenu.addEventListener(
 // CLOSE MOBILE MENU
 // ========================================
 
+function closeMobileMenu() {
+
+    sidebar.classList.remove(
+        "open"
+    );
+
+    overlay.classList.remove(
+        "show"
+    );
+}
+
 overlay.addEventListener(
     "click",
-    () => {
-
-        sidebar.classList.remove(
-            "open"
-        );
-
-        overlay.classList.remove(
-            "show"
-        );
-
-    }
+    closeMobileMenu
 );
 
 
@@ -539,14 +693,10 @@ overlay.addEventListener(
 function createModelOption(model) {
 
     const option =
-        document.createElement(
-            "option"
-        );
-
+        document.createElement("option");
 
     option.value =
         model.id;
-
 
     option.textContent =
         model.name +
@@ -556,19 +706,12 @@ function createModelOption(model) {
                 : " • Coming soon"
         );
 
-
-    // Keep unavailable models selectable
-    // so we can test the router.
-    option.disabled = false;
-
-
     return option;
-
 }
 
 
 // ========================================
-// LOAD MODELS FROM BACKEND
+// LOAD MODELS
 // ========================================
 
 async function loadModels() {
@@ -580,19 +723,15 @@ async function loadModels() {
                 `${API_URL}/api/models`
             );
 
-
         if (!response.ok) {
 
             throw new Error(
                 "Model API failed."
             );
-
         }
-
 
         const data =
             await response.json();
-
 
         if (
             !data.models ||
@@ -602,18 +741,11 @@ async function loadModels() {
             throw new Error(
                 "Invalid model data."
             );
-
         }
 
+        modelSelect.innerHTML = "";
 
-        // Clear current options
-        modelSelect.innerHTML =
-            "";
-
-
-        // Group models by provider
         const groups = {};
-
 
         data.models.forEach(
             model => {
@@ -627,19 +759,14 @@ async function loadModels() {
                     groups[
                         model.provider
                     ] = [];
-
                 }
-
 
                 groups[
                     model.provider
                 ].push(model);
-
             }
         );
 
-
-        // Create provider groups
         Object.entries(groups)
             .forEach(
                 ([provider, providerModels]) => {
@@ -649,10 +776,8 @@ async function loadModels() {
                             "optgroup"
                         );
 
-
                     group.label =
                         provider;
-
 
                     providerModels.forEach(
                         model => {
@@ -662,43 +787,45 @@ async function loadModels() {
                                     model
                                 )
                             );
-
                         }
                     );
-
 
                     modelSelect.appendChild(
                         group
                     );
-
                 }
             );
 
+        const savedConversation =
+            getCurrentConversation();
 
-        // Select first model
+        if (savedConversation) {
+
+            modelSelect.value =
+                savedConversation.model;
+        }
+
         if (
             modelSelect.options.length
         ) {
 
-            modelSelect.selectedIndex =
-                0;
+            if (
+                !modelSelect.value
+            ) {
 
+                modelSelect.selectedIndex =
+                    0;
+            }
 
             selectedModel.textContent =
                 modelSelect
-                    .options[0]
+                    .options[
+                        modelSelect.selectedIndex
+                    ]
                     .text;
-
         }
 
-
-        console.log(
-            "SAPI models loaded:",
-            data.models
-        );
-
     }
-
 
     catch (error) {
 
@@ -706,18 +833,38 @@ async function loadModels() {
             "Could not load SAPI models:",
             error
         );
-
     }
-
 }
 
 
 // ========================================
-// START
+// RESTORE LAST CHAT
 // ========================================
 
-loadModels();
+function restoreLastConversation() {
 
+    if (
+        conversations.length === 0
+    ) {
+        return;
+    }
+
+    const latest =
+        conversations[0];
+
+    loadConversation(
+        latest.id
+    );
+}
+
+
+// ========================================
+// START SAPI
+// ========================================
+
+renderRecentChats();
+
+loadModels();
 
 console.log(
     "================================"
@@ -737,7 +884,11 @@ console.log(
 );
 
 console.log(
-    "Model router: CONNECTED"
+    "Conversation history: ENABLED"
+);
+
+console.log(
+    "Storage: Browser localStorage"
 );
 
 console.log(
