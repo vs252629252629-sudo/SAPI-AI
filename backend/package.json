@@ -1,12 +1,13 @@
 {
   "name": "sapi-ai-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "SAPI AI backend — Built by Saprielle Studio.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@google/genai": "^1.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^5.1.0"
