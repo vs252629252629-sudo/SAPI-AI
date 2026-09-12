@@ -56,7 +56,7 @@ const models = [
 ];
 
 // ========================================
-// ROUTES
+// BASIC ROUTES
 // ========================================
 
 app.get("/", (req, res) => {
@@ -84,7 +84,7 @@ app.get("/api/models", (req, res) => {
 });
 
 // ========================================
-// MODEL FINDER
+// MODEL LOOKUP
 // ========================================
 
 function findModel(modelId) {
@@ -96,17 +96,6 @@ function findModel(modelId) {
 // ========================================
 
 async function runGemini(message) {
-    /*
-     * Gemini provider connection goes here.
-     *
-     * Keep any provider credential server-side.
-     * Do NOT place credentials in:
-     * - index.html
-     * - style.css
-     * - app.js
-     * - GitHub README
-     */
-
     return {
         success: false,
         provider: "Google",
@@ -157,10 +146,23 @@ async function runClaude(message) {
 }
 
 // ========================================
+// PROVIDER MAP
+// ========================================
+
+const providers = {
+    "google-gemini": runGemini,
+    "sapi-plus": runSapiPlus,
+    "sapi-55": runSapi55,
+    "openai": runOpenAI,
+    "anthropic-claude": runClaude
+};
+
+// ========================================
 // MODEL ROUTER
 // ========================================
 
 async function routeToModel(modelId, message) {
+
     const model = findModel(modelId);
 
     if (!model) {
@@ -168,34 +170,24 @@ async function routeToModel(modelId, message) {
             success: false,
             provider: "SAPI",
             model: "Unknown",
-            response: "That model is not registered with SAPI."
+            response:
+                "That model is not registered with SAPI."
         };
     }
 
-    switch (model.id) {
-        case "google-gemini":
-            return await runGemini(message);
+    const provider = providers[model.id];
 
-        case "sapi-plus":
-            return await runSapiPlus(message);
-
-        case "sapi-55":
-            return await runSapi55(message);
-
-        case "openai":
-            return await runOpenAI(message);
-
-        case "anthropic-claude":
-            return await runClaude(message);
-
-        default:
-            return {
-                success: false,
-                provider: model.provider,
-                model: model.name,
-                response: "This model does not have an adapter yet."
-            };
+    if (!provider) {
+        return {
+            success: false,
+            provider: model.provider,
+            model: model.name,
+            response:
+                "No provider adapter is available for this model yet."
+        };
     }
+
+    return await provider(message);
 }
 
 // ========================================
@@ -203,7 +195,9 @@ async function routeToModel(modelId, message) {
 // ========================================
 
 app.post("/api/chat", async (req, res) => {
+
     try {
+
         const message =
             typeof req.body.message === "string"
                 ? req.body.message.trim()
@@ -221,10 +215,8 @@ app.post("/api/chat", async (req, res) => {
             });
         }
 
-        const result = await routeToModel(
-            model,
-            message
-        );
+        const result =
+            await routeToModel(model, message);
 
         res.json({
             success: true,
@@ -236,6 +228,7 @@ app.post("/api/chat", async (req, res) => {
         });
 
     } catch (error) {
+
         console.error(
             "SAPI Router Error:",
             error
@@ -253,17 +246,20 @@ app.post("/api/chat", async (req, res) => {
 // ========================================
 
 app.use((req, res) => {
+
     res.status(404).json({
         success: false,
         error: "SAPI API endpoint not found."
     });
+
 });
 
 // ========================================
-// START
+// START SERVER
 // ========================================
 
 app.listen(PORT, () => {
+
     console.log("");
     console.log("================================");
     console.log("        SAPI AI BACKEND");
@@ -274,4 +270,5 @@ app.listen(PORT, () => {
     console.log(`Registered models: ${models.length}`);
     console.log("Built by Saprielle Studio.");
     console.log("");
+
 });
