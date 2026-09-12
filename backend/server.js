@@ -12,6 +12,7 @@ const app = express();
 const PORT =
     process.env.PORT || 3000;
 
+
 // ========================================
 // MIDDLEWARE
 // ========================================
@@ -29,7 +30,6 @@ app.use(
 // GOOGLE GENAI
 // ========================================
 
-let GoogleGenAI = null;
 let geminiClient = null;
 
 async function initializeGemini() {
@@ -45,11 +45,14 @@ async function initializeGemini() {
             return false;
         }
 
+
         const googleGenAI =
             await import("@google/genai");
 
-        GoogleGenAI =
+
+        const GoogleGenAI =
             googleGenAI.GoogleGenAI;
+
 
         geminiClient =
             new GoogleGenAI({
@@ -57,9 +60,11 @@ async function initializeGemini() {
                     process.env.GEMINI_API_KEY
             });
 
+
         console.log(
             "✅ Gemini SDK initialized."
         );
+
 
         return true;
 
@@ -69,6 +74,9 @@ async function initializeGemini() {
             "❌ Gemini SDK initialization failed:",
             error.message
         );
+
+        geminiClient =
+            null;
 
         return false;
     }
@@ -83,23 +91,36 @@ const models = [
 
     {
         id: "sapi-plus",
+
         name: "SAPI+",
+
         provider: "SAPI",
-        providerType: "first-party",
+
+        providerType:
+            "first-party",
+
         available: false,
+
         capabilities: [
             "chat",
             "code",
             "reasoning"
         ]
     },
+
 
     {
         id: "sapi-55",
+
         name: "SAPI 5.5+",
+
         provider: "SAPI",
-        providerType: "first-party",
+
+        providerType:
+            "first-party",
+
         available: false,
+
         capabilities: [
             "chat",
             "code",
@@ -107,24 +128,38 @@ const models = [
         ]
     },
 
+
     {
         id: "google-gemini",
+
         name: "Gemini",
+
         provider: "Google",
-        providerType: "third-party",
+
+        providerType:
+            "third-party",
+
         available: true,
+
         capabilities: [
             "chat",
             "vision"
         ]
     },
 
+
     {
         id: "openai",
+
         name: "OpenAI",
+
         provider: "OpenAI",
-        providerType: "third-party",
+
+        providerType:
+            "third-party",
+
         available: false,
+
         capabilities: [
             "chat",
             "code",
@@ -132,12 +167,19 @@ const models = [
         ]
     },
 
+
     {
         id: "anthropic-claude",
+
         name: "Claude",
+
         provider: "Anthropic",
-        providerType: "third-party",
+
+        providerType:
+            "third-party",
+
         available: false,
+
         capabilities: [
             "chat",
             "code",
@@ -158,9 +200,11 @@ app.get(
 
         res.json({
 
-            name: "SAPI AI",
+            name:
+                "SAPI AI",
 
-            status: "online",
+            status:
+                "online",
 
             message:
                 "SAPI AI backend is running.",
@@ -187,7 +231,8 @@ app.get(
 
         res.json({
 
-            status: "healthy",
+            status:
+                "healthy",
 
             service:
                 "SAPI AI",
@@ -214,34 +259,38 @@ app.get(
 
         res.json({
 
-            success: true,
+            success:
+                true,
 
             count:
                 models.length,
 
             models:
-                models.map(model => {
+                models.map(
+                    model => {
 
-                    if (
-                        model.id ===
-                        "google-gemini"
-                    ) {
+                        if (
+                            model.id ===
+                            "google-gemini"
+                        ) {
 
-                        return {
+                            return {
 
-                            ...model,
+                                ...model,
 
-                            available:
-                                Boolean(
-                                    geminiClient
-                                )
+                                available:
+                                    Boolean(
+                                        geminiClient
+                                    )
 
-                        };
+                            };
+
+                        }
+
+                        return model;
+
                     }
-
-                    return model;
-
-                })
+                )
 
         });
 
@@ -253,12 +302,16 @@ app.get(
 // FIND MODEL
 // ========================================
 
-function findModel(modelId) {
+function findModel(
+    modelId
+) {
 
     return models.find(
         model =>
-            model.id === modelId
+            model.id ===
+            modelId
     );
+
 }
 
 
@@ -275,11 +328,14 @@ async function runGemini(
         throw new Error(
             "Gemini is not initialized. Check GEMINI_API_KEY in Render."
         );
+
     }
+
 
     console.log(
         "🤖 Sending request to Gemini..."
     );
+
 
     const interaction =
         await geminiClient.interactions.create({
@@ -292,22 +348,28 @@ async function runGemini(
 
         });
 
+
     const text =
         interaction.output_text ||
         "";
+
 
     if (!text.trim()) {
 
         throw new Error(
             "Gemini returned an empty response."
         );
+
     }
+
 
     console.log(
         "✅ Gemini response received."
     );
 
+
     return text;
+
 }
 
 
@@ -323,11 +385,13 @@ async function routeToModel(
     const selectedModel =
         findModel(modelId);
 
+
     if (!selectedModel) {
 
         throw new Error(
             "That model is not registered with SAPI."
         );
+
     }
 
 
@@ -345,6 +409,7 @@ async function routeToModel(
                 message
             );
 
+
         return {
 
             provider:
@@ -353,7 +418,8 @@ async function routeToModel(
             model:
                 "Gemini",
 
-            response
+            response:
+                response
 
         };
 
@@ -372,6 +438,7 @@ async function routeToModel(
         throw new Error(
             "SAPI+ is registered but its own AI engine is not connected yet."
         );
+
     }
 
 
@@ -387,6 +454,7 @@ async function routeToModel(
         throw new Error(
             "SAPI 5.5+ is registered but its own AI engine is not connected yet."
         );
+
     }
 
 
@@ -402,6 +470,7 @@ async function routeToModel(
         throw new Error(
             "OpenAI is registered but its provider connection is not configured yet."
         );
+
     }
 
 
@@ -417,12 +486,14 @@ async function routeToModel(
         throw new Error(
             "Claude is registered but its provider connection is not configured yet."
         );
+
     }
 
 
     throw new Error(
         "This model does not have a provider adapter yet."
     );
+
 }
 
 
@@ -439,13 +510,18 @@ app.post(
             const message =
                 typeof req.body.message ===
                 "string"
+
                     ? req.body.message.trim()
+
                     : "";
+
 
             const model =
                 typeof req.body.model ===
                 "string"
+
                     ? req.body.model
+
                     : "google-gemini";
 
 
@@ -453,7 +529,8 @@ app.post(
 
                 return res.status(400).json({
 
-                    success: false,
+                    success:
+                        false,
 
                     error:
                         "Message is required."
@@ -464,20 +541,28 @@ app.post(
 
 
             console.log("");
+
             console.log(
                 "================================"
             );
+
             console.log(
                 "SAPI CHAT REQUEST"
             );
+
             console.log(
                 "Model:",
                 model
             );
+
             console.log(
                 "Message:",
-                message.substring(0, 100)
+                message.substring(
+                    0,
+                    100
+                )
             );
+
             console.log(
                 "================================"
             );
@@ -492,7 +577,8 @@ app.post(
 
             return res.json({
 
-                success: true,
+                success:
+                    true,
 
                 requestedModel:
                     model,
@@ -503,7 +589,8 @@ app.post(
                 model:
                     result.model,
 
-                connected: true,
+                connected:
+                    true,
 
                 response:
                     result.response
@@ -514,12 +601,14 @@ app.post(
 
             console.error(
                 "❌ SAPI Router Error:",
-                error
+                error.message
             );
+
 
             return res.status(500).json({
 
-                success: false,
+                success:
+                    false,
 
                 error:
                     error.message ||
@@ -542,7 +631,8 @@ app.use(
 
         res.status(404).json({
 
-            success: false,
+            success:
+                false,
 
             error:
                 "SAPI API endpoint not found."
@@ -560,6 +650,7 @@ app.use(
 async function startServer() {
 
     await initializeGemini();
+
 
     app.listen(
         PORT,
@@ -601,6 +692,11 @@ async function startServer() {
             );
 
             console.log(
+                "Gemini SDK:",
+                "@google/genai 2.x+"
+            );
+
+            console.log(
                 "Built by Saprielle Studio."
             );
 
@@ -608,6 +704,8 @@ async function startServer() {
 
         }
     );
+
 }
+
 
 startServer();
