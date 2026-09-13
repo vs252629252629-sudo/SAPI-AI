@@ -1,28 +1,68 @@
 // ========================================
-// SAPI AI — FRONTEND
+// SAPI AI FRONTEND
 // Built by Saprielle Studio
 // ========================================
 
-const API_URL = "https://sapi-ai.onrender.com";
+
+const API_URL =
+    "https://sapi-ai.onrender.com";
+
 
 // ========================================
 // ELEMENTS
 // ========================================
 
-const promptInput = document.getElementById("prompt");
-const sendButton = document.getElementById("sendButton");
-const messages = document.getElementById("messages");
-const welcome = document.getElementById("welcome");
+const promptInput =
+    document.getElementById("prompt");
 
-const modelSelect = document.getElementById("modelSelect");
-const selectedModel = document.getElementById("selectedModel");
+const sendButton =
+    document.getElementById("sendButton");
 
-const newChat = document.getElementById("newChat");
-const recentChats = document.getElementById("recentChats");
+const messages =
+    document.getElementById("messages");
 
-const mobileMenu = document.getElementById("mobileMenu");
-const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
+const welcome =
+    document.getElementById("welcome");
+
+const modelSelect =
+    document.getElementById("modelSelect");
+
+const personalitySelect =
+    document.getElementById("personalitySelect");
+
+const modeSelect =
+    document.getElementById("modeSelect");
+
+const selectedModel =
+    document.getElementById("selectedModel");
+
+const customInstructions =
+    document.getElementById(
+        "customInstructions"
+    );
+
+const newChat =
+    document.getElementById("newChat");
+
+const recentChats =
+    document.getElementById(
+        "recentChats"
+    );
+
+const mobileMenu =
+    document.getElementById(
+        "mobileMenu"
+    );
+
+const sidebar =
+    document.getElementById(
+        "sidebar"
+    );
+
+const overlay =
+    document.getElementById(
+        "overlay"
+    );
 
 
 // ========================================
@@ -30,29 +70,47 @@ const overlay = document.getElementById("overlay");
 // ========================================
 
 const particles =
-    document.getElementById("particles");
+    document.getElementById(
+        "particles"
+    );
+
 
 if (particles) {
 
-    for (let i = 0; i < 45; i++) {
+    for (
+        let i = 0;
+        i < 45;
+        i++
+    ) {
 
         const particle =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
         particle.className =
             "particle";
 
         particle.style.left =
-            Math.random() * 100 + "%";
+            Math.random() *
+                100 +
+            "%";
 
         particle.style.top =
-            Math.random() * 100 + "%";
+            Math.random() *
+                100 +
+            "%";
 
         particle.style.animationDelay =
-            Math.random() * 8 + "s";
+            Math.random() *
+                8 +
+            "s";
 
         particle.style.animationDuration =
-            5 + Math.random() * 8 + "s";
+            5 +
+            Math.random() *
+                8 +
+            "s";
 
         particles.appendChild(
             particle
@@ -62,7 +120,178 @@ if (particles) {
 
 
 // ========================================
-// ADD MESSAGE
+// CHAT STORAGE
+// ========================================
+
+let conversations =
+    JSON.parse(
+        localStorage.getItem(
+            "sapi_conversations"
+        ) || "[]"
+    );
+
+
+// ========================================
+// CURRENT CONVERSATION
+// ========================================
+
+let currentConversation =
+    null;
+
+
+// ========================================
+// CREATE CONVERSATION
+// ========================================
+
+function createConversation(
+    firstMessage = ""
+) {
+
+    const conversation = {
+
+        id:
+            Date.now().toString(),
+
+        title:
+            firstMessage
+                ? createTitle(
+                    firstMessage
+                )
+                : "New Chat",
+
+        messages:
+            [],
+
+        pinned:
+            false,
+
+        archived:
+            false,
+
+        createdAt:
+            Date.now(),
+
+        updatedAt:
+            Date.now()
+
+    };
+
+
+    conversations.unshift(
+        conversation
+    );
+
+
+    saveConversations();
+
+
+    currentConversation =
+        conversation;
+
+
+    renderRecentChats();
+
+
+    return conversation;
+}
+
+
+// ========================================
+// CREATE TITLE
+// ========================================
+
+function createTitle(
+    text
+) {
+
+    const cleaned =
+        text
+            .replace(
+                /\s+/g,
+                " "
+            )
+            .trim();
+
+
+    if (
+        cleaned.length <= 35
+    ) {
+
+        return cleaned;
+
+    }
+
+
+    return (
+        cleaned.substring(
+            0,
+            35
+        ) +
+        "..."
+    );
+}
+
+
+// ========================================
+// SAVE CONVERSATIONS
+// ========================================
+
+function saveConversations() {
+
+    localStorage.setItem(
+        "sapi_conversations",
+        JSON.stringify(
+            conversations
+        )
+    );
+}
+
+
+// ========================================
+// ADD MESSAGE TO CONVERSATION
+// ========================================
+
+function saveMessage(
+    role,
+    text
+) {
+
+    if (!currentConversation) {
+
+        currentConversation =
+            createConversation(
+                text
+            );
+
+    }
+
+
+    currentConversation.messages.push({
+
+        role:
+            role,
+
+        text:
+            text,
+
+        time:
+            Date.now()
+
+    });
+
+
+    currentConversation.updatedAt =
+        Date.now();
+
+
+    saveConversations();
+
+    renderRecentChats();
+}
+
+
+// ========================================
+// ADD MESSAGE UI
 // ========================================
 
 function addMessage(
@@ -73,58 +302,634 @@ function addMessage(
     welcome.style.display =
         "none";
 
+
     const message =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     message.className =
         sender === "user"
             ? "message user-message"
             : "message ai-message";
 
+
     const avatar =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     avatar.className =
         "message-avatar";
+
 
     avatar.textContent =
         sender === "user"
             ? "U"
             : "S";
 
+
     const content =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     content.className =
         "message-content";
 
+
     const messageText =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     messageText.className =
         "message-text";
 
+
     messageText.textContent =
         text;
+
 
     content.appendChild(
         messageText
     );
 
+
     message.appendChild(
         avatar
     );
+
 
     message.appendChild(
         content
     );
 
+
     messages.appendChild(
         message
     );
 
+
     messages.scrollTop =
         messages.scrollHeight;
+}
+
+
+// ========================================
+// LOAD CONVERSATION UI
+// ========================================
+
+function loadConversation(
+    conversation
+) {
+
+    currentConversation =
+        conversation;
+
+
+    messages.innerHTML =
+        "";
+
+
+    if (
+        !conversation.messages.length
+    ) {
+
+        welcome.style.display =
+            "flex";
+
+        return;
+    }
+
+
+    welcome.style.display =
+        "none";
+
+
+    conversation.messages
+        .forEach(
+            message => {
+
+                addMessage(
+                    message.text,
+                    message.role ===
+                        "user"
+                        ? "user"
+                        : "ai"
+                );
+
+            }
+        );
+}
+
+
+// ========================================
+// RECENT CHATS
+// ========================================
+
+function renderRecentChats() {
+
+    if (!recentChats) {
+        return;
+    }
+
+
+    recentChats.innerHTML =
+        "";
+
+
+    const visible =
+        conversations
+            .filter(
+                chat =>
+                    !chat.archived
+            )
+            .sort(
+                (a, b) => {
+
+                    if (
+                        a.pinned &&
+                        !b.pinned
+                    ) {
+                        return -1;
+                    }
+
+                    if (
+                        !a.pinned &&
+                        b.pinned
+                    ) {
+                        return 1;
+                    }
+
+                    return (
+                        b.updatedAt -
+                        a.updatedAt
+                    );
+
+                }
+            )
+            .slice(
+                0,
+                12
+            );
+
+
+    visible.forEach(
+        conversation => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.style.display =
+                "flex";
+
+
+            row.style.alignItems =
+                "center";
+
+
+            row.style.gap =
+                "3px";
+
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.className =
+                "chat-item";
+
+
+            button.textContent =
+                conversation.pinned
+                    ? "📌 " +
+                      conversation.title
+                    : conversation.title;
+
+
+            button.style.flex =
+                "1";
+
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    loadConversation(
+                        conversation
+                    );
+
+                }
+            );
+
+
+            const menu =
+                document.createElement(
+                    "button"
+                );
+
+
+            menu.textContent =
+                "⋮";
+
+
+            menu.style.width =
+                "30px";
+
+
+            menu.style.border =
+                "0";
+
+
+            menu.style.background =
+                "transparent";
+
+
+            menu.style.color =
+                "#777c8e";
+
+
+            menu.style.cursor =
+                "pointer";
+
+
+            menu.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    showChatMenu(
+                        conversation,
+                        menu
+                    );
+
+                }
+            );
+
+
+            row.appendChild(
+                button
+            );
+
+
+            row.appendChild(
+                menu
+            );
+
+
+            recentChats.appendChild(
+                row
+            );
+
+        }
+    );
+}
+
+
+// ========================================
+// CHAT MENU
+// ========================================
+
+function showChatMenu(
+    conversation,
+    anchor
+) {
+
+    const existing =
+        document.getElementById(
+            "sapi-chat-menu"
+        );
+
+
+    if (existing) {
+        existing.remove();
+    }
+
+
+    const menu =
+        document.createElement(
+            "div"
+        );
+
+
+    menu.id =
+        "sapi-chat-menu";
+
+
+    menu.style.position =
+        "fixed";
+
+
+    menu.style.zIndex =
+        "100";
+
+
+    menu.style.width =
+        "160px";
+
+
+    menu.style.padding =
+        "6px";
+
+
+    menu.style.border =
+        "1px solid rgba(255,255,255,0.1)";
+
+
+    menu.style.borderRadius =
+        "10px";
+
+
+    menu.style.background =
+        "#11131c";
+
+
+    menu.style.boxShadow =
+        "0 15px 40px rgba(0,0,0,0.4)";
+
+
+    const rect =
+        anchor.getBoundingClientRect();
+
+
+    menu.style.left =
+        Math.min(
+            rect.right + 5,
+            window.innerWidth - 170
+        ) + "px";
+
+
+    menu.style.top =
+        rect.top + "px";
+
+
+    const options = [
+
+        {
+            label:
+                conversation.pinned
+                    ? "Unpin"
+                    : "Pin",
+
+            action:
+                () => {
+
+                    conversation.pinned =
+                        !conversation.pinned;
+
+                    saveConversations();
+
+                    renderRecentChats();
+
+                }
+
+        },
+
+        {
+            label:
+                "Rename",
+
+            action:
+                () => {
+
+                    const name =
+                        prompt(
+                            "Rename this chat:",
+                            conversation.title
+                        );
+
+
+                    if (
+                        name &&
+                        name.trim()
+                    ) {
+
+                        conversation.title =
+                            name.trim();
+
+                        conversation.updatedAt =
+                            Date.now();
+
+                        saveConversations();
+
+                        renderRecentChats();
+
+                    }
+
+                }
+
+        },
+
+        {
+            label:
+                "Archive",
+
+            action:
+                () => {
+
+                    conversation.archived =
+                        true;
+
+                    saveConversations();
+
+                    renderRecentChats();
+
+                }
+
+        },
+
+        {
+            label:
+                "Delete",
+
+            action:
+                () => {
+
+                    const confirmed =
+                        confirm(
+                            "Delete this chat?"
+                        );
+
+
+                    if (!confirmed) {
+                        return;
+                    }
+
+
+                    conversations =
+                        conversations.filter(
+                            chat =>
+                                chat.id !==
+                                conversation.id
+                        );
+
+
+                    if (
+                        currentConversation &&
+                        currentConversation.id ===
+                            conversation.id
+                    ) {
+
+                        currentConversation =
+                            null;
+
+                        messages.innerHTML =
+                            "";
+
+                        welcome.style.display =
+                            "flex";
+
+                    }
+
+
+                    saveConversations();
+
+                    renderRecentChats();
+
+                }
+
+        }
+
+    ];
+
+
+    options.forEach(
+        option => {
+
+            const item =
+                document.createElement(
+                    "button"
+                );
+
+
+            item.textContent =
+                option.label;
+
+
+            item.style.display =
+                "block";
+
+
+            item.style.width =
+                "100%";
+
+
+            item.style.padding =
+                "9px";
+
+
+            item.style.border =
+                "0";
+
+
+            item.style.borderRadius =
+                "7px";
+
+
+            item.style.color =
+                "#d9dce7";
+
+
+            item.style.background =
+                "transparent";
+
+
+            item.style.textAlign =
+                "left";
+
+
+            item.style.cursor =
+                "pointer";
+
+
+            item.addEventListener(
+                "mouseenter",
+                () => {
+
+                    item.style.background =
+                        "rgba(255,255,255,0.07)";
+
+                }
+            );
+
+
+            item.addEventListener(
+                "mouseleave",
+                () => {
+
+                    item.style.background =
+                        "transparent";
+
+                }
+            );
+
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    menu.remove();
+
+                    option.action();
+
+                }
+            );
+
+
+            menu.appendChild(
+                item
+            );
+
+        }
+    );
+
+
+    document.body.appendChild(
+        menu
+    );
+
+
+    setTimeout(
+        () => {
+
+            document.addEventListener(
+                "click",
+                function closeMenu(
+                    event
+                ) {
+
+                    if (
+                        !menu.contains(
+                            event.target
+                        )
+                    ) {
+
+                        menu.remove();
+
+                        document.removeEventListener(
+                            "click",
+                            closeMenu
+                        );
+
+                    }
+
+                }
+            );
+
+        },
+        0
+    );
 }
 
 
@@ -135,13 +940,20 @@ function addMessage(
 function addLoadingMessage() {
 
     const loading =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     loading.className =
         "message ai-message";
 
+
     loading.innerHTML = `
-        <div class="message-avatar">S</div>
+
+        <div class="message-avatar">
+            S
+        </div>
 
         <div class="message-content">
 
@@ -150,14 +962,18 @@ function addLoadingMessage() {
             </div>
 
         </div>
+
     `;
+
 
     messages.appendChild(
         loading
     );
 
+
     messages.scrollTop =
         messages.scrollHeight;
+
 
     return loading;
 }
@@ -172,25 +988,73 @@ async function sendMessage() {
     const text =
         promptInput.value.trim();
 
+
     if (!text) {
         return;
     }
 
+
     const model =
         modelSelect.value;
+
+
+    const personality =
+        personalitySelect.value;
+
+
+    const mode =
+        modeSelect.value;
+
+
+    const instructions =
+        customInstructions.value.trim();
+
+
+    // ========================================
+    // CREATE CHAT
+    // ========================================
+
+    if (!currentConversation) {
+
+        currentConversation =
+            createConversation(
+                text
+            );
+
+    }
+
+
+    // ========================================
+    // USER MESSAGE
+    // ========================================
 
     addMessage(
         text,
         "user"
     );
 
-    promptInput.value = "";
+
+    saveMessage(
+        "user",
+        text
+    );
+
+
+    // ========================================
+    // CLEAR INPUT
+    // ========================================
+
+    promptInput.value =
+        "";
+
 
     promptInput.style.height =
         "auto";
 
+
     sendButton.disabled =
         true;
+
 
     const loading =
         addLoadingMessage();
@@ -199,10 +1063,11 @@ async function sendMessage() {
     try {
 
         console.log(
-            "SAPI request:",
+            "SAPI request",
             {
                 model,
-                message: text
+                personality,
+                mode
             }
         );
 
@@ -211,27 +1076,44 @@ async function sendMessage() {
             await fetch(
                 `${API_URL}/api/chat`,
                 {
-                    method: "POST",
+
+                    method:
+                        "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json"
+
                     },
 
                     body:
                         JSON.stringify({
-                            message: text,
-                            model: model
+
+                            message:
+                                text,
+
+                            model:
+                                model,
+
+                            personality:
+                                personality,
+
+                            mode:
+                                mode,
+
+                            customInstructions:
+                                instructions
+
                         })
+
                 }
             );
 
 
-        // ========================================
-        // READ RESPONSE SAFELY
-        // ========================================
+        let data =
+            null;
 
-        let data = null;
 
         try {
 
@@ -241,7 +1123,7 @@ async function sendMessage() {
         } catch (jsonError) {
 
             console.error(
-                "SAPI returned invalid JSON:",
+                "Invalid backend JSON:",
                 jsonError
             );
 
@@ -251,50 +1133,37 @@ async function sendMessage() {
         loading.remove();
 
 
-        // ========================================
-        // BACKEND ERROR
-        // ========================================
-
         if (!response.ok) {
 
-            const backendError =
+            const errorMessage =
                 data &&
                 data.error
+
                     ? data.error
+
                     : `Backend returned HTTP ${response.status}.`;
 
-            console.error(
-                "SAPI backend error:",
-                backendError
-            );
 
             addMessage(
-                `SAPI backend error: ${backendError}`,
+                `SAPI backend error: ${errorMessage}`,
                 "ai"
             );
+
 
             return;
         }
 
-
-        // ========================================
-        // SUCCESS
-        // ========================================
 
         if (
             !data ||
             !data.response
         ) {
 
-            console.error(
-                "Invalid SAPI response:",
-                data
-            );
-
             addMessage(
-                "SAPI received an empty response from the AI provider.",
+                "SAPI received an empty response.",
                 "ai"
             );
+
 
             return;
         }
@@ -306,8 +1175,9 @@ async function sendMessage() {
         );
 
 
-        addRecentChat(
-            text
+        saveMessage(
+            "ai",
+            data.response
         );
 
 
@@ -318,7 +1188,9 @@ async function sendMessage() {
             error
         );
 
+
         loading.remove();
+
 
         addMessage(
             "SAPI couldn't connect to the backend. Please check the Render service.",
@@ -331,6 +1203,7 @@ async function sendMessage() {
             false;
 
         promptInput.focus();
+
     }
 }
 
@@ -351,7 +1224,7 @@ sendButton.addEventListener(
 
 promptInput.addEventListener(
     "keydown",
-    (event) => {
+    event => {
 
         if (
             event.key === "Enter" &&
@@ -361,6 +1234,7 @@ promptInput.addEventListener(
             event.preventDefault();
 
             sendMessage();
+
         }
 
     }
@@ -368,7 +1242,7 @@ promptInput.addEventListener(
 
 
 // ========================================
-// AUTO RESIZE INPUT
+// AUTO RESIZE
 // ========================================
 
 promptInput.addEventListener(
@@ -378,18 +1252,20 @@ promptInput.addEventListener(
         promptInput.style.height =
             "auto";
 
+
         promptInput.style.height =
             Math.min(
                 promptInput.scrollHeight,
                 180
-            ) + "px";
+            ) +
+            "px";
 
     }
 );
 
 
 // ========================================
-// MODEL SELECTOR
+// MODEL
 // ========================================
 
 modelSelect.addEventListener(
@@ -401,16 +1277,47 @@ modelSelect.addEventListener(
                 modelSelect.selectedIndex
             ];
 
+
         if (!option) {
             return;
         }
 
+
         selectedModel.textContent =
             option.text;
 
+    }
+);
+
+
+// ========================================
+// PERSONALITY
+// ========================================
+
+personalitySelect.addEventListener(
+    "change",
+    () => {
+
         console.log(
-            "Selected SAPI model:",
-            modelSelect.value
+            "SAPI personality:",
+            personalitySelect.value
+        );
+
+    }
+);
+
+
+// ========================================
+// MODE
+// ========================================
+
+modeSelect.addEventListener(
+    "change",
+    () => {
+
+        console.log(
+            "SAPI mode:",
+            modeSelect.value
         );
 
     }
@@ -422,80 +1329,38 @@ modelSelect.addEventListener(
 // ========================================
 
 document
-    .querySelectorAll(".quick-card")
-    .forEach(card => {
+    .querySelectorAll(
+        ".quick-card"
+    )
+    .forEach(
+        card => {
 
-        card.addEventListener(
-            "click",
-            () => {
+            card.addEventListener(
+                "click",
+                () => {
 
-                const prompt =
-                    card.dataset.prompt;
-
-                promptInput.value =
-                    prompt;
-
-                promptInput.focus();
-
-                promptInput.dispatchEvent(
-                    new Event("input")
-                );
-
-            }
-        );
-
-    });
+                    const text =
+                        card.dataset.prompt;
 
 
-// ========================================
-// ADD RECENT CHAT
-// ========================================
+                    promptInput.value =
+                        text;
 
-function addRecentChat(text) {
 
-    if (!recentChats) {
-        return;
-    }
+                    promptInput.focus();
 
-    const item =
-        document.createElement(
-            "button"
-        );
 
-    item.className =
-        "chat-item";
+                    promptInput.dispatchEvent(
+                        new Event(
+                            "input"
+                        )
+                    );
 
-    item.textContent =
-        text.length > 35
-            ? text.substring(0, 35) + "..."
-            : text;
-
-    item.addEventListener(
-        "click",
-        () => {
-
-            promptInput.value =
-                text;
-
-            promptInput.focus();
+                }
+            );
 
         }
     );
-
-    recentChats.prepend(
-        item
-    );
-
-
-    while (
-        recentChats.children.length > 8
-    ) {
-
-        recentChats.lastElementChild
-            .remove();
-
-    }
-}
 
 
 // ========================================
@@ -506,17 +1371,25 @@ newChat.addEventListener(
     "click",
     () => {
 
+        currentConversation =
+            null;
+
+
         messages.innerHTML =
             "";
+
 
         welcome.style.display =
             "flex";
 
+
         promptInput.value =
             "";
 
+
         promptInput.style.height =
             "auto";
+
 
         promptInput.focus();
 
@@ -528,70 +1401,43 @@ newChat.addEventListener(
 // MOBILE MENU
 // ========================================
 
-mobileMenu.addEventListener(
-    "click",
-    () => {
+if (mobileMenu) {
 
-        sidebar.classList.add(
-            "open"
-        );
+    mobileMenu.addEventListener(
+        "click",
+        () => {
 
-        overlay.classList.add(
-            "show"
-        );
+            sidebar.classList.add(
+                "open"
+            );
 
-    }
-);
+            overlay.classList.add(
+                "show"
+            );
 
+        }
+    );
 
-// ========================================
-// CLOSE MOBILE MENU
-// ========================================
-
-overlay.addEventListener(
-    "click",
-    () => {
-
-        sidebar.classList.remove(
-            "open"
-        );
-
-        overlay.classList.remove(
-            "show"
-        );
-
-    }
-);
+}
 
 
-// ========================================
-// CREATE MODEL OPTION
-// ========================================
+if (overlay) {
 
-function createModelOption(
-    model
-) {
+    overlay.addEventListener(
+        "click",
+        () => {
 
-    const option =
-        document.createElement(
-            "option"
-        );
+            sidebar.classList.remove(
+                "open"
+            );
 
-    option.value =
-        model.id;
+            overlay.classList.remove(
+                "show"
+            );
 
-    option.textContent =
-        model.name +
-        (
-            model.available
-                ? " • Connected"
-                : " • Coming soon"
-        );
+        }
+    );
 
-    option.disabled =
-        false;
-
-    return option;
 }
 
 
@@ -608,15 +1454,19 @@ async function loadModels() {
                 `${API_URL}/api/models`
             );
 
+
         if (!response.ok) {
 
             throw new Error(
                 "Model API failed."
             );
+
         }
+
 
         const data =
             await response.json();
+
 
         if (
             !data.models ||
@@ -628,6 +1478,7 @@ async function loadModels() {
             throw new Error(
                 "Invalid model data."
             );
+
         }
 
 
@@ -653,6 +1504,7 @@ async function loadModels() {
 
                 }
 
+
                 groups[
                     model.provider
                 ].push(
@@ -663,59 +1515,80 @@ async function loadModels() {
         );
 
 
-        Object.entries(groups)
-            .forEach(
-                ([provider, providerModels]) => {
+        Object.entries(
+            groups
+        )
+        .forEach(
+            ([provider, providerModels]) => {
 
-                    const group =
-                        document.createElement(
-                            "optgroup"
-                        );
-
-                    group.label =
-                        provider;
+                const group =
+                    document.createElement(
+                        "optgroup"
+                    );
 
 
-                    providerModels.forEach(
-                        model => {
+                group.label =
+                    provider;
 
-                            group.appendChild(
-                                createModelOption(
-                                    model
-                                )
+
+                providerModels.forEach(
+                    model => {
+
+                        const option =
+                            document.createElement(
+                                "option"
                             );
 
-                        }
-                    );
+
+                        option.value =
+                            model.id;
 
 
-                    modelSelect.appendChild(
-                        group
-                    );
+                        option.textContent =
+                            model.name +
+                            (
+                                model.available
+                                    ? " • Connected"
+                                    : " • Coming soon"
+                            );
 
-                }
+
+                        group.appendChild(
+                            option
+                        );
+
+                    }
+                );
+
+
+                modelSelect.appendChild(
+                    group
+                );
+
+            }
+        );
+
+
+        const geminiOption =
+            Array.from(
+                modelSelect.options
+            )
+            .find(
+                option =>
+                    option.value ===
+                    "google-gemini"
             );
 
 
-        if (
-            modelSelect.options.length
-        ) {
+        if (geminiOption) {
 
-            modelSelect.selectedIndex =
-                0;
+            modelSelect.value =
+                "google-gemini";
 
             selectedModel.textContent =
-                modelSelect
-                    .options[0]
-                    .text;
+                geminiOption.text;
 
         }
-
-
-        console.log(
-            "SAPI models loaded:",
-            data.models
-        );
 
 
     } catch (error) {
@@ -726,7 +1599,15 @@ async function loadModels() {
         );
 
     }
+
 }
+
+
+// ========================================
+// LOAD SAVED CHATS
+// ========================================
+
+renderRecentChats();
 
 
 // ========================================
@@ -740,22 +1621,52 @@ console.log(
     "================================"
 );
 
+
 console.log(
     "        SAPI AI FRONTEND"
 );
 
+
 console.log(
     "================================"
 );
+
 
 console.log(
     "Backend:",
     API_URL
 );
 
+
 console.log(
-    "Model router: CONNECTED"
+    "Gemini:",
+    "CONNECTED"
 );
+
+
+console.log(
+    "Identity:",
+    "SAPI AI"
+);
+
+
+console.log(
+    "Personality system:",
+    "ACTIVE"
+);
+
+
+console.log(
+    "Mode system:",
+    "ACTIVE"
+);
+
+
+console.log(
+    "Conversation storage:",
+    "ACTIVE"
+);
+
 
 console.log(
     "Built by Saprielle Studio."
