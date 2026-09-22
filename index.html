@@ -1,747 +1,537 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-    <meta charset="UTF-8">
+  <title>SAPI AI — Built by Saprielle Studio</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+  <meta
+    name="description"
+    content="SAPI AI — Built by Saprielle Studio."
+  >
 
-    <title>
-        SAPI AI — Built by Saprielle Studio
-    </title>
-
-    <meta
-        name="description"
-        content="SAPI AI — Your intelligent AI assistant, built by Saprielle Studio."
-    >
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+  <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
+  <div class="app-shell">
 
-<!-- ========================================
-     BACKGROUND
-======================================== -->
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
 
-<div class="background">
+      <div class="brand">
+        <div class="brand-logo">S</div>
 
-    <div class="glow glow-1"></div>
-
-    <div class="glow glow-2"></div>
-
-    <div class="grid"></div>
-
-    <div id="particles"></div>
-
-</div>
-
-
-<!-- ========================================
-     APP
-======================================== -->
-
-<div class="app">
-
-
-<!-- ========================================
-     SIDEBAR
-======================================== -->
-
-<aside
-    class="sidebar"
-    id="sidebar"
->
-
-
-    <div class="sidebar-top">
-
-
-        <!-- BRAND -->
-
-        <div class="brand">
-
-            <div class="brand-logo">
-                S
-            </div>
-
-            <div class="brand-text">
-
-                <strong>
-                    SAPI
-                </strong>
-
-                <span>
-                    AI
-                </span>
-
-            </div>
-
+        <div class="brand-text">
+          <strong>SAPI</strong>
+          <span>AI</span>
         </div>
+      </div>
 
+      <button class="new-chat-btn" id="newChatBtn">
+        <span>＋</span>
+        <span>New Chat</span>
+      </button>
 
-        <!-- NEW CHAT -->
+      <div class="sidebar-section">
+        <div class="section-label">WORKSPACE</div>
 
-        <button
-            class="new-chat"
-            id="newChat"
-        >
-
-            <span>
-                ＋
-            </span>
-
-            <span>
-                New Chat
-            </span>
-
+        <button class="sidebar-item active">
+          <span class="sidebar-icon">◈</span>
+          <span>Chats</span>
         </button>
 
+        <button class="sidebar-item">
+          <span class="sidebar-icon">📁</span>
+          <span>Projects</span>
+        </button>
 
-        <!-- NAVIGATION -->
+        <button class="sidebar-item">
+          <span class="sidebar-icon">🤖</span>
+          <span>Agents</span>
+        </button>
+      </div>
 
-        <div class="nav-section">
+      <!-- RECENT CONVERSATIONS -->
+      <div class="recent-section">
 
-            <div class="nav-title">
-                WORKSPACE
-            </div>
+        <div class="section-label recent-label">
+          <span>RECENT CHATS</span>
+          <button id="clearRecentBtn" class="tiny-action" title="Clear local chat history">
+            ×
+          </button>
+        </div>
 
+        <div id="recentChats" class="recent-chats"></div>
 
-            <button
-                class="nav-item active"
-            >
+        <div id="emptyRecent" class="empty-recent">
+          <span class="empty-recent-icon">◌</span>
+          <span>Your conversations will appear here.</span>
+        </div>
 
-                <span>
-                    💬
+      </div>
+
+      <div class="sidebar-bottom">
+
+        <button class="sidebar-item settings-btn">
+          <span class="sidebar-icon">⚙</span>
+          <span>Settings</span>
+        </button>
+
+        <div class="studio-credit">
+          <span class="studio-dot"></span>
+          <span>Built by Saprielle Studio.</span>
+        </div>
+
+      </div>
+
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-area">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+
+        <button class="mobile-menu" id="mobileMenuBtn">
+          ☰
+        </button>
+
+        <div class="topbar-selectors">
+
+          <!-- MODEL -->
+          <div class="smart-select" data-select="model">
+
+            <button class="smart-select-trigger" type="button">
+              <span class="select-icon model-icon">✦</span>
+
+              <span class="select-content">
+                <span class="select-label">MODEL</span>
+                <span class="select-value" id="modelValue">
+                  Gemini
                 </span>
+              </span>
 
-                Chats
+              <span class="select-chevron">⌄</span>
+            </button>
+
+            <div class="smart-menu" id="modelMenu"></div>
+
+          </div>
+
+          <!-- PERSONALITY -->
+          <div class="smart-select" data-select="personality">
+
+            <button class="smart-select-trigger" type="button">
+
+              <span class="select-icon personality-icon">
+                ✿
+              </span>
+
+              <span class="select-content">
+                <span class="select-label">PERSONALITY</span>
+                <span class="select-value" id="personalityValue">
+                  Standard
+                </span>
+              </span>
+
+              <span class="select-chevron">⌄</span>
 
             </button>
 
+            <div class="smart-menu">
 
-            <button
-                class="nav-item"
-            >
-
+              <button class="smart-option selected" data-value="standard">
+                <span class="option-icon">✦</span>
                 <span>
-                    🗂️
+                  <strong>Standard</strong>
+                  <small>Balanced SAPI</small>
                 </span>
+              </button>
 
-                Projects
-
-            </button>
-
-
-            <button
-                class="nav-item"
-            >
-
+              <button class="smart-option" data-value="teacher">
+                <span class="option-icon">📚</span>
                 <span>
-                    🤖
+                  <strong>Teacher</strong>
+                  <small>Explains step by step</small>
                 </span>
+              </button>
 
-                Agents
-
-            </button>
-
-        </div>
-
-
-        <!-- RECENT CHATS -->
-
-        <div class="nav-section recent">
-
-            <div class="nav-title">
-                RECENT CHATS
-            </div>
-
-            <div id="recentChats"></div>
-
-        </div>
-
-
-    </div>
-
-
-    <!-- SIDEBAR BOTTOM -->
-
-    <div class="sidebar-bottom">
-
-
-        <button
-            class="nav-item"
-            id="settingsButton"
-        >
-
-            <span>
-                ⚙️
-            </span>
-
-            Settings
-
-        </button>
-
-
-        <div class="creator">
-
-            <div class="creator-icon">
-                S
-            </div>
-
-
-            <div>
-
-                <strong>
-                    Saprielle Studio
-                </strong>
-
-                <small>
-                    Creator of SAPI AI
-                </small>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</aside>
-
-
-<!-- ========================================
-     MAIN
-======================================== -->
-
-<main class="main">
-
-
-<!-- ========================================
-     TOPBAR
-======================================== -->
-
-<header class="topbar">
-
-
-    <div class="topbar-left">
-
-
-        <button
-            class="mobile-menu"
-            id="mobileMenu"
-            aria-label="Open menu"
-        >
-            ☰
-        </button>
-
-
-        <!-- MODEL -->
-
-        <div class="selector-box">
-
-
-            <span class="selector-icon">
-                ✦
-            </span>
-
-
-            <div class="selector-info">
-
-                <span class="selector-label">
-                    MODEL
+              <button class="smart-option" data-value="programmer">
+                <span class="option-icon">⌘</span>
+                <span>
+                  <strong>Programmer</strong>
+                  <small>Focused on coding</small>
                 </span>
+              </button>
 
-
-                <select id="modelSelect">
-
-                    <option value="google-gemini">
-                        Gemini
-                    </option>
-
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <!-- PERSONALITY -->
-
-        <div class="selector-box">
-
-
-            <span class="selector-icon">
-                🧠
-            </span>
-
-
-            <div class="selector-info">
-
-                <span class="selector-label">
-                    PERSONALITY
+              <button class="smart-option" data-value="creative">
+                <span class="option-icon">✦</span>
+                <span>
+                  <strong>Creative</strong>
+                  <small>Ideas and imagination</small>
                 </span>
+              </button>
 
+              <button class="smart-option" data-value="study">
+                <span class="option-icon">📖</span>
+                <span>
+                  <strong>Study</strong>
+                  <small>Learning assistant</small>
+                </span>
+              </button>
 
-                <select id="personalitySelect">
+              <button class="smart-option" data-value="researcher">
+                <span class="option-icon">⌕</span>
+                <span>
+                  <strong>Researcher</strong>
+                  <small>Detailed investigation</small>
+                </span>
+              </button>
 
-                    <option value="standard">
-                        Standard
-                    </option>
+              <button class="smart-option" data-value="gamer">
+                <span class="option-icon">🎮</span>
+                <span>
+                  <strong>Gamer</strong>
+                  <small>Gaming-focused</small>
+                </span>
+              </button>
 
-                    <option value="teacher">
-                        Teacher
-                    </option>
+              <button class="smart-option" data-value="analyst">
+                <span class="option-icon">◫</span>
+                <span>
+                  <strong>Analyst</strong>
+                  <small>Breaks down information</small>
+                </span>
+              </button>
 
-                    <option value="programmer">
-                        Programmer
-                    </option>
+              <button class="smart-option" data-value="expert">
+                <span class="option-icon">◆</span>
+                <span>
+                  <strong>Expert</strong>
+                  <small>Technical depth</small>
+                </span>
+              </button>
 
-                    <option value="creative">
-                        Creative
-                    </option>
+              <button class="smart-option" data-value="friendly">
+                <span class="option-icon">☺</span>
+                <span>
+                  <strong>Friendly</strong>
+                  <small>Warm and conversational</small>
+                </span>
+              </button>
 
-                    <option value="study">
-                        Study
-                    </option>
+              <button class="smart-option" data-value="fast">
+                <span class="option-icon">⚡</span>
+                <span>
+                  <strong>Fast</strong>
+                  <small>Short and direct</small>
+                </span>
+              </button>
 
-                    <option value="researcher">
-                        Researcher
-                    </option>
-
-                    <option value="gamer">
-                        Gamer
-                    </option>
-
-                    <option value="analyst">
-                        Analyst
-                    </option>
-
-                    <option value="expert">
-                        Expert
-                    </option>
-
-                    <option value="friendly">
-                        Friendly
-                    </option>
-
-                    <option value="fast">
-                        Fast
-                    </option>
-
-                    <option value="calm">
-                        Calm
-                    </option>
-
-                </select>
+              <button class="smart-option" data-value="calm">
+                <span class="option-icon">◌</span>
+                <span>
+                  <strong>Calm</strong>
+                  <small>Clear and relaxed</small>
+                </span>
+              </button>
 
             </div>
 
-        </div>
+          </div>
 
+          <!-- MODE -->
+          <div class="smart-select" data-select="mode">
 
-        <!-- MODE -->
+            <button class="smart-select-trigger" type="button">
 
-        <div class="selector-box">
-
-
-            <span class="selector-icon">
+              <span class="select-icon mode-icon">
                 ⚡
-            </span>
+              </span>
 
-
-            <div class="selector-info">
-
-                <span class="selector-label">
-                    MODE
+              <span class="select-content">
+                <span class="select-label">MODE</span>
+                <span class="select-value" id="modeValue">
+                  Chat
                 </span>
+              </span>
 
+              <span class="select-chevron">⌄</span>
 
-                <select id="modeSelect">
+            </button>
 
-                    <option value="chat">
-                        Chat
-                    </option>
+            <div class="smart-menu">
 
-                    <option value="research">
-                        Research
-                    </option>
+              <button class="smart-option selected" data-value="chat">
+                <span class="option-icon">💬</span>
+                <span>
+                  <strong>Chat</strong>
+                  <small>General conversation</small>
+                </span>
+              </button>
 
-                    <option value="code">
-                        Code
-                    </option>
+              <button class="smart-option" data-value="research">
+                <span class="option-icon">🔎</span>
+                <span>
+                  <strong>Research</strong>
+                  <small>Explore a topic</small>
+                </span>
+              </button>
 
-                    <option value="study">
-                        Study
-                    </option>
+              <button class="smart-option" data-value="code">
+                <span class="option-icon">💻</span>
+                <span>
+                  <strong>Code</strong>
+                  <small>Build and debug</small>
+                </span>
+              </button>
 
-                    <option value="write">
-                        Write
-                    </option>
+              <button class="smart-option" data-value="study">
+                <span class="option-icon">📚</span>
+                <span>
+                  <strong>Study</strong>
+                  <small>Learn something</small>
+                </span>
+              </button>
 
-                    <option value="math">
-                        Math
-                    </option>
+              <button class="smart-option" data-value="write">
+                <span class="option-icon">✎</span>
+                <span>
+                  <strong>Write</strong>
+                  <small>Create better writing</small>
+                </span>
+              </button>
 
-                    <option value="creative">
-                        Creative
-                    </option>
+              <button class="smart-option" data-value="math">
+                <span class="option-icon">∑</span>
+                <span>
+                  <strong>Math</strong>
+                  <small>Solve problems</small>
+                </span>
+              </button>
 
-                    <option value="analyze">
-                        Analyze
-                    </option>
+              <button class="smart-option" data-value="creative">
+                <span class="option-icon">✦</span>
+                <span>
+                  <strong>Creative</strong>
+                  <small>Create ideas</small>
+                </span>
+              </button>
 
-                    <option value="translate">
-                        Translate
-                    </option>
+              <button class="smart-option" data-value="analyze">
+                <span class="option-icon">◫</span>
+                <span>
+                  <strong>Analyze</strong>
+                  <small>Understand information</small>
+                </span>
+              </button>
 
-                    <option value="summarize">
-                        Summarize
-                    </option>
+              <button class="smart-option" data-value="translate">
+                <span class="option-icon">文</span>
+                <span>
+                  <strong>Translate</strong>
+                  <small>Translate languages</small>
+                </span>
+              </button>
 
-                    <option value="brainstorm">
-                        Brainstorm
-                    </option>
+              <button class="smart-option" data-value="summarize">
+                <span class="option-icon">≡</span>
+                <span>
+                  <strong>Summarize</strong>
+                  <small>Make it shorter</small>
+                </span>
+              </button>
 
-                    <option value="plan">
-                        Plan
-                    </option>
+              <button class="smart-option" data-value="brainstorm">
+                <span class="option-icon">💡</span>
+                <span>
+                  <strong>Brainstorm</strong>
+                  <small>Generate ideas</small>
+                </span>
+              </button>
 
-                </select>
+              <button class="smart-option" data-value="plan">
+                <span class="option-icon">☷</span>
+                <span>
+                  <strong>Plan</strong>
+                  <small>Build a strategy</small>
+                </span>
+              </button>
 
             </div>
 
+          </div>
+
         </div>
 
+        <div class="topbar-actions">
 
-    </div>
+          <button class="shortcut-btn">
+            <span>⌘</span>
+            <span>K</span>
+          </button>
 
-
-    <div class="topbar-right">
-
-
-        <button
-            class="top-button"
-            id="commandButton"
-        >
-            ⌘ K
-        </button>
-
-
-        <button
-            class="top-button"
-            id="settingsTopButton"
-        >
+          <button class="icon-btn">
             ⚙
-        </button>
+          </button>
 
-
-        <button
-            class="profile-button"
-        >
+          <button class="profile-btn">
             S
-        </button>
-
-    </div>
-
-</header>
-
-
-<!-- ========================================
-     CHAT
-======================================== -->
-
-<section class="chat-area">
-
-
-    <!-- WELCOME -->
-
-    <div
-        class="welcome"
-        id="welcome"
-    >
-
-
-        <div class="sapi-mark">
-
-            <div class="mark-ring"></div>
-
-            <span>
-                S
-            </span>
+          </button>
 
         </div>
 
+      </header>
 
-        <div class="welcome-badge">
+      <!-- CHAT AREA -->
+      <section class="chat-area" id="chatArea">
 
-            ✦ SAPI AI
+        <div class="welcome-screen" id="welcomeScreen">
 
-        </div>
+          <div class="welcome-logo-wrap">
+            <div class="welcome-logo">S</div>
 
+            <div class="welcome-badge">
+              ✦ SAPI AI
+            </div>
+          </div>
 
-        <h1>
-
+          <h1>
             What can I
-
-            <span>
-                help you
-            </span>
-
+            <span>help you</span>
             with?
+          </h1>
 
-        </h1>
-
-
-        <p>
-
-            Your intelligent AI assistant.
-
-            Ask questions, create, code,
+          <p>
+            Your intelligent AI assistant. Ask questions, create, code,
             research and explore.
+          </p>
 
-        </p>
-
-
-        <div class="built-by">
-
+          <div class="welcome-credit">
             Built by Saprielle Studio.
+          </div>
+
+          <div class="quick-actions">
+
+            <button class="quick-action" data-mode="brainstorm">
+              <span class="quick-icon">💡</span>
+              <span>
+                <strong>Brainstorm</strong>
+                <small>Generate creative ideas</small>
+              </span>
+            </button>
+
+            <button class="quick-action" data-mode="code">
+              <span class="quick-icon">💻</span>
+              <span>
+                <strong>Code</strong>
+                <small>Build and debug</small>
+              </span>
+            </button>
+
+            <button class="quick-action" data-mode="research">
+              <span class="quick-icon">🔎</span>
+              <span>
+                <strong>Research</strong>
+                <small>Explore a topic</small>
+              </span>
+            </button>
+
+            <button class="quick-action" data-mode="study">
+              <span class="quick-icon">📚</span>
+              <span>
+                <strong>Study</strong>
+                <small>Learn something new</small>
+              </span>
+            </button>
+
+          </div>
 
         </div>
 
+        <div class="messages" id="messages"></div>
 
-        <!-- QUICK ACTIONS -->
+      </section>
 
-        <div class="quick-actions">
+      <!-- COMPOSER -->
+      <div class="composer-wrapper">
 
+        <div class="composer">
 
-            <button
-                class="quick-card"
-                data-prompt="Help me brainstorm some creative ideas."
-            >
+          <button
+            class="composer-add"
+            id="composerAdd"
+            title="More tools"
+          >
+            +
+          </button>
 
-                <div class="quick-icon">
-                    💡
-                </div>
-
-                <div>
-
-                    <strong>
-                        Brainstorm
-                    </strong>
-
-                    <span>
-                        Generate creative ideas
-                    </span>
-
-                </div>
-
-            </button>
-
-
-            <button
-                class="quick-card"
-                data-prompt="Help me write some code."
-            >
-
-                <div class="quick-icon">
-                    💻
-                </div>
-
-                <div>
-
-                    <strong>
-                        Code
-                    </strong>
-
-                    <span>
-                        Build and debug
-                    </span>
-
-                </div>
-
-            </button>
-
-
-            <button
-                class="quick-card"
-                data-prompt="Help me research this topic."
-            >
-
-                <div class="quick-icon">
-                    🔎
-                </div>
-
-                <div>
-
-                    <strong>
-                        Research
-                    </strong>
-
-                    <span>
-                        Explore a topic
-                    </span>
-
-                </div>
-
-            </button>
-
-
-            <button
-                class="quick-card"
-                data-prompt="Teach me something step by step."
-            >
-
-                <div class="quick-icon">
-                    📚
-                </div>
-
-                <div>
-
-                    <strong>
-                        Study
-                    </strong>
-
-                    <span>
-                        Learn something new
-                    </span>
-
-                </div>
-
-            </button>
-
-
-        </div>
-
-    </div>
-
-
-    <!-- MESSAGES -->
-
-    <div
-        class="messages"
-        id="messages"
-    ></div>
-
-
-</section>
-
-
-<!-- ========================================
-     INPUT
-======================================== -->
-
-<footer class="input-area">
-
-
-    <div class="input-wrapper">
-
-
-        <button
-            class="input-button"
-            id="attachButton"
-            aria-label="Attach file"
-        >
-            ＋
-        </button>
-
-
-        <textarea
-            id="prompt"
-            placeholder="Message SAPI..."
+          <textarea
+            id="messageInput"
             rows="1"
-        ></textarea>
+            placeholder="Message SAPI..."
+            autocomplete="off"
+          ></textarea>
 
+          <button
+            class="voice-btn"
+            id="voiceBtn"
+            title="Voice input"
+          >
+            ♫
+          </button>
 
-        <div class="input-actions">
-
-
-            <button
-                class="input-button"
-                id="voiceButton"
-                aria-label="Voice"
-            >
-                🎙
-            </button>
-
-
-            <button
-                class="send-button"
-                id="sendButton"
-                aria-label="Send"
-            >
-                ➤
-            </button>
-
+          <button
+            class="send-btn"
+            id="sendBtn"
+            title="Send"
+          >
+            ➤
+          </button>
 
         </div>
 
-    </div>
+        <div class="instructions-row">
 
+          <span class="instructions-label">
+            SAPI INSTRUCTIONS
+          </span>
 
-    <!-- CUSTOM INSTRUCTIONS -->
-
-    <div class="custom-instructions">
-
-        <label for="customInstructions">
-
-            SAPI instructions
-
-        </label>
-
-
-        <input
+          <input
             id="customInstructions"
             type="text"
             placeholder="Optional: tell SAPI how you want it to respond..."
-        >
+          >
 
-    </div>
+        </div>
 
+        <div class="composer-footer">
 
-    <div class="input-footer">
-
-        <span>
+          <span>
             SAPI can make mistakes. Check important information.
-        </span>
+          </span>
 
+          <span id="connectionStatus">
+            Gemini · Connected
+          </span>
 
-        <span id="selectedModel">
-            Gemini
-        </span>
+        </div>
 
-    </div>
+      </div>
 
-</footer>
+    </main>
 
+  </div>
 
-</main>
+  <div class="toast" id="toast"></div>
 
-</div>
-
-
-<!-- ========================================
-     MOBILE OVERLAY
-======================================== -->
-
-<div
-    class="overlay"
-    id="overlay"
-></div>
-
-
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 
 </body>
-
 </html>
