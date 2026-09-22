@@ -1,713 +1,649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>SAPI AI</title>
+  <title>SAPI AI — Built by Saprielle Studio</title>
+  <meta
+    name="description"
+    content="SAPI AI — Your intelligent AI assistant. Built by Saprielle Studio."
+  >
 
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="app">
+  <div class="app-shell">
 
-    <!-- =========================
-         SIDEBAR
-    ========================== -->
-
+    <!-- ================= SIDEBAR ================= -->
     <aside class="sidebar" id="sidebar">
 
-        <div class="brand">
-            <div class="brand-logo">S</div>
+      <div class="brand">
+        <div class="brand-logo">S</div>
 
-            <div class="brand-text">
-                <div class="brand-name">SAPI</div>
-                <div class="brand-ai">AI</div>
-            </div>
+        <div class="brand-text">
+          <strong>SAPI</strong>
+          <span>AI</span>
         </div>
+      </div>
 
-        <button class="new-chat-btn" id="newChatBtn">
-            <span>＋</span>
-            <span>New Chat</span>
+      <button class="new-chat-btn" id="newChatBtn">
+        <span class="new-chat-plus">+</span>
+        <span>New Chat</span>
+      </button>
+
+      <div class="sidebar-section">
+
+        <div class="section-label">WORKSPACE</div>
+
+        <button class="sidebar-item active" id="chatsBtn">
+          <span class="sidebar-icon icon-chat">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs>
+                <linearGradient id="chatGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#9b8cff"/>
+                  <stop offset="100%" stop-color="#27b8ff"/>
+                </linearGradient>
+              </defs>
+
+              <path
+                fill="url(#chatGradient)"
+                d="M13 12h38c6.6 0 12 5.4 12 12v17c0 6.6-5.4 12-12 12H31l-11 9v-9h-7c-6.6 0-12-5.4-12-12V24c0-6.6 5.4-12 12-12z"
+              />
+
+              <circle cx="23" cy="32" r="3" fill="white"/>
+              <circle cx="32" cy="32" r="3" fill="white"/>
+              <circle cx="41" cy="32" r="3" fill="white"/>
+            </svg>
+          </span>
+
+          <span>Chats</span>
         </button>
 
-        <div class="sidebar-section">
+        <button class="sidebar-item" id="projectsBtn">
+          <span class="sidebar-icon icon-project">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs>
+                <linearGradient id="projectGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#a56cff"/>
+                  <stop offset="100%" stop-color="#21c5ff"/>
+                </linearGradient>
+              </defs>
 
-            <div class="sidebar-title">
-                WORKSPACE
-            </div>
+              <path
+                d="M12 16h15l6 7h19c4.4 0 8 3.6 8 8v17c0 4.4-3.6 8-8 8H12c-4.4 0-8-3.6-8-8V24c0-4.4 3.6-8 8-8z"
+                fill="none"
+                stroke="url(#projectGradient)"
+                stroke-width="5"
+                stroke-linejoin="round"
+              />
 
-            <button class="sidebar-item active">
-                <span>☁</span>
-                <span>Chats</span>
-            </button>
+              <path
+                d="M31 30v22M20 41h22"
+                stroke="url(#projectGradient)"
+                stroke-width="5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </span>
 
-            <button class="sidebar-item">
-                <span>📁</span>
-                <span>Projects</span>
-            </button>
+          <span>Projects</span>
+        </button>
 
-            <button class="sidebar-item">
-                <span>🤖</span>
-                <span>Agents</span>
-            </button>
+        <button class="sidebar-item" id="agentsBtn">
+          <span class="sidebar-icon icon-agent">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <defs>
+                <linearGradient id="agentGradient" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#58d5ff"/>
+                  <stop offset="100%" stop-color="#3885ff"/>
+                </linearGradient>
+              </defs>
 
+              <rect
+                x="14"
+                y="20"
+                width="36"
+                height="32"
+                rx="9"
+                fill="url(#agentGradient)"
+              />
+
+              <rect
+                x="8"
+                y="30"
+                width="7"
+                height="14"
+                rx="3"
+                fill="url(#agentGradient)"
+              />
+
+              <rect
+                x="49"
+                y="30"
+                width="7"
+                height="14"
+                rx="3"
+                fill="url(#agentGradient)"
+              />
+
+              <circle cx="25" cy="36" r="4" fill="#07101d"/>
+              <circle cx="39" cy="36" r="4" fill="#07101d"/>
+
+              <path
+                d="M27 45h10"
+                stroke="#07101d"
+                stroke-width="3"
+                stroke-linecap="round"
+              />
+
+              <circle cx="32" cy="13" r="5" fill="url(#agentGradient)"/>
+              <path
+                d="M32 18v4"
+                stroke="url(#agentGradient)"
+                stroke-width="3"
+              />
+            </svg>
+          </span>
+
+          <span>Agents</span>
+        </button>
+
+      </div>
+
+
+      <!-- ================= RECENT CHATS ================= -->
+
+      <div class="sidebar-section recent-section">
+
+        <div class="section-label">RECENT CHATS</div>
+
+        <div id="recentChats" class="recent-chats"></div>
+
+      </div>
+
+
+      <!-- ================= SIDEBAR BOTTOM ================= -->
+
+      <div class="sidebar-bottom">
+
+        <button class="sidebar-item settings-item" id="settingsBtn">
+          <span class="settings-icon">⚙</span>
+          <span>Settings</span>
+        </button>
+
+        <div class="studio-card">
+          <div class="studio-dot"></div>
+
+          <div>
+            <strong>Saprielle Studio</strong>
+            <span>Built by Saprielle Studio.</span>
+          </div>
         </div>
 
-        <div class="sidebar-section recent-section">
-
-            <div class="sidebar-title">
-                RECENT CHATS
-            </div>
-
-            <div id="recentChats" class="recent-chats"></div>
-
-        </div>
-
-        <div class="sidebar-bottom">
-
-            <button class="sidebar-item settings-item">
-                <span>⚙</span>
-                <span>Settings</span>
-            </button>
-
-            <div class="studio">
-                <div class="studio-dot"></div>
-
-                <div>
-                    <div class="studio-title">
-                        Saprielle Studio
-                    </div>
-
-                    <div class="studio-subtitle">
-                        Built by Saprielle Studio.
-                    </div>
-                </div>
-            </div>
-
-        </div>
+      </div>
 
     </aside>
 
 
-    <!-- =========================
-         MAIN
-    ========================== -->
+    <!-- ================= MAIN ================= -->
 
-    <main class="main">
+    <main class="main-area">
 
-        <!-- TOP BAR -->
+      <!-- TOPBAR -->
 
-        <header class="topbar">
+      <header class="topbar">
 
-            <div class="topbar-left">
+        <div class="selector-group">
 
-                <!-- MODEL -->
+          <!-- MODEL -->
 
-                <div class="selector">
-
-                    <button
-                        class="selector-button"
-                        id="modelSelector"
-                        type="button"
-                    >
-
-                        <div class="selector-icon model-icon">
-                            ✦
-                        </div>
-
-                        <div class="selector-content">
-
-                            <span class="selector-label">
-                                MODEL
-                            </span>
-
-                            <span
-                                class="selector-value"
-                                id="modelValue"
-                            >
-                                Gemini · Connected
-                            </span>
-
-                        </div>
-
-                        <span class="selector-arrow">
-                           ⌄
-                        </span>
-
-                    </button>
-
-                    <div
-                        class="dropdown-menu model-menu"
-                        id="modelMenu"
-                    >
-
-                        <div class="dropdown-group">
-                            SAPI
-                        </div>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="model"
-                            data-value="sapi-plus"
-                        >
-                            <span>SAPI+</span>
-                            <small>Coming soon</small>
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="model"
-                            data-value="sapi-5.5-plus"
-                        >
-                            <span>SAPI 5.5+</span>
-                            <small>Coming soon</small>
-                        </button>
-
-
-                        <div class="dropdown-group">
-                            GOOGLE
-                        </div>
-
-                        <button
-                            class="dropdown-option selected"
-                            data-type="model"
-                            data-value="google-gemini"
-                        >
-                            <span>Gemini</span>
-                            <small>Connected</small>
-                        </button>
-
-
-                        <div class="dropdown-group">
-                            OPENAI
-                        </div>
-
-                        <button
-                            class="dropdown-option disabled"
-                            data-type="model"
-                            data-value="openai"
-                        >
-                            <span>OpenAI</span>
-                            <small>Coming soon</small>
-                        </button>
-
-
-                        <div class="dropdown-group">
-                            ANTHROPIC
-                        </div>
-
-                        <button
-                            class="dropdown-option disabled"
-                            data-type="model"
-                            data-value="claude"
-                        >
-                            <span>Claude</span>
-                            <small>Coming soon</small>
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- PERSONALITY -->
-
-                <div class="selector">
-
-                    <button
-                        class="selector-button"
-                        id="personalitySelector"
-                        type="button"
-                    >
-
-                        <div class="selector-icon personality-icon">
-                            ✿
-                        </div>
-
-                        <div class="selector-content">
-
-                            <span class="selector-label">
-                                PERSONALITY
-                            </span>
-
-                            <span
-                                class="selector-value"
-                                id="personalityValue"
-                            >
-                                Standard
-                            </span>
-
-                        </div>
-
-                        <span class="selector-arrow">
-                           ⌄
-                        </span>
-
-                    </button>
-
-                    <div
-                        class="dropdown-menu"
-                        id="personalityMenu"
-                    >
-
-                        <div class="dropdown-group">
-                            PERSONALITIES
-                        </div>
-
-                        <button
-                            class="dropdown-option selected"
-                            data-type="personality"
-                            data-value="standard"
-                        >
-                            Standard
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="teacher"
-                        >
-                            Teacher
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="programmer"
-                        >
-                            Programmer
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="creative"
-                        >
-                            Creative
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="study"
-                        >
-                            Study
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="researcher"
-                        >
-                            Researcher
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="gamer"
-                        >
-                            Gamer
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="analyst"
-                        >
-                            Analyst
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="expert"
-                        >
-                            Expert
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="friendly"
-                        >
-                            Friendly
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="fast"
-                        >
-                            Fast
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="personality"
-                            data-value="calm"
-                        >
-                            Calm
-                        </button>
-
-                    </div>
-
-                </div>
-
-
-                <!-- MODE -->
-
-                <div class="selector">
-
-                    <button
-                        class="selector-button"
-                        id="modeSelector"
-                        type="button"
-                    >
-
-                        <div class="selector-icon mode-icon">
-                            ⚡
-                        </div>
-
-                        <div class="selector-content">
-
-                            <span class="selector-label">
-                                MODE
-                            </span>
-
-                            <span
-                                class="selector-value"
-                                id="modeValue"
-                            >
-                                Chat
-                            </span>
-
-                        </div>
-
-                        <span class="selector-arrow">
-                           ⌄
-                        </span>
-
-                    </button>
-
-                    <div
-                        class="dropdown-menu"
-                        id="modeMenu"
-                    >
-
-                        <div class="dropdown-group">
-                            AI MODES
-                        </div>
-
-                        <button
-                            class="dropdown-option selected"
-                            data-type="mode"
-                            data-value="chat"
-                        >
-                            Chat
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="research"
-                        >
-                            Research
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="code"
-                        >
-                            Code
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="study"
-                        >
-                            Study
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="write"
-                        >
-                            Write
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="math"
-                        >
-                            Math
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="creative"
-                        >
-                            Creative
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="analyze"
-                        >
-                            Analyze
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="translate"
-                        >
-                            Translate
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="summarize"
-                        >
-                            Summarize
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="brainstorm"
-                        >
-                            Brainstorm
-                        </button>
-
-                        <button
-                            class="dropdown-option"
-                            data-type="mode"
-                            data-value="plan"
-                        >
-                            Plan
-                        </button>
-
-                    </div>
-
-                </div>
-
+          <div class="selector-box">
+            <div class="selector-icon model-selector-icon">
+              ✦
             </div>
 
+            <div class="selector-content">
+              <span class="selector-label">MODEL</span>
 
-            <div class="topbar-right">
+              <select id="modelSelect">
+                <option value="sapi-plus">
+                  SAPI+ • Coming soon
+                </option>
 
-                <button class="top-icon-btn">
-                    ⌘ K
-                </button>
+                <option value="sapi-5.5-plus">
+                  SAPI 5.5+ • Coming soon
+                </option>
 
-                <button class="top-icon-btn">
-                    ⚙
-                </button>
+                <option value="google-gemini" selected>
+                  Gemini • Connected
+                </option>
 
+                <option value="openai">
+                  OpenAI • Coming soon
+                </option>
+
+                <option value="anthropic">
+                  Claude • Coming soon
+                </option>
+              </select>
             </div>
 
-        </header>
+            <span class="selector-arrow">⌄</span>
+          </div>
 
 
-        <!-- CHAT AREA -->
+          <!-- PERSONALITY -->
 
-        <section
-            class="chat-area"
-            id="chatArea"
-        >
+          <div class="selector-box">
 
-            <div
-                class="welcome-screen"
-                id="welcomeScreen"
-            >
-
-                <div class="sapi-orb">
-                    S
-                </div>
-
-                <div class="sapi-badge">
-                    ✦ SAPI AI
-                </div>
-
-                <h1>
-                    What can I
-                    <span>help you</span>
-                    with?
-                </h1>
-
-                <p>
-                    Your intelligent AI assistant. Ask questions,
-                    create, code, research and explore.
-                </p>
-
-                <div class="built-by">
-                    Built by Saprielle Studio.
-                </div>
-
-
-                <div class="quick-actions">
-
-                    <button
-                        class="quick-card"
-                        data-action="brainstorm"
-                    >
-                        <span class="quick-icon">💡</span>
-
-                        <span>
-                            <strong>Brainstorm</strong>
-                            <small>Generate creative ideas</small>
-                        </span>
-                    </button>
-
-                    <button
-                        class="quick-card"
-                        data-action="code"
-                    >
-                        <span class="quick-icon">💻</span>
-
-                        <span>
-                            <strong>Code</strong>
-                            <small>Build and debug</small>
-                        </span>
-                    </button>
-
-                    <button
-                        class="quick-card"
-                        data-action="research"
-                    >
-                        <span class="quick-icon">🔎</span>
-
-                        <span>
-                            <strong>Research</strong>
-                            <small>Explore a topic</small>
-                        </span>
-                    </button>
-
-                    <button
-                        class="quick-card"
-                        data-action="study"
-                    >
-                        <span class="quick-icon">📚</span>
-
-                        <span>
-                            <strong>Study</strong>
-                            <small>Learn something new</small>
-                        </span>
-                    </button>
-
-                </div>
-
+            <div class="selector-icon personality-icon">
+              ✦
             </div>
 
+            <div class="selector-content">
+              <span class="selector-label">PERSONALITY</span>
 
-            <div
-                class="messages"
-                id="messages"
-            ></div>
-
-        </section>
-
-
-        <!-- =========================
-             CENTERED COMPOSER
-        ========================== -->
-
-        <div class="composer-wrapper">
-
-            <div class="composer">
-
-                <button
-                    class="composer-add"
-                    type="button"
-                >
-                    ＋
-                </button>
-
-                <textarea
-                    id="messageInput"
-                    rows="1"
-                    placeholder="Message SAPI..."
-                ></textarea>
-
-                <button
-                    class="composer-mic"
-                    type="button"
-                    title="Voice"
-                >
-                    🎙
-                </button>
-
-                <button
-                    class="send-btn"
-                    id="sendBtn"
-                    type="button"
-                >
-                    ➤
-                </button>
-
+              <select id="personalitySelect">
+                <option value="standard" selected>Standard</option>
+                <option value="teacher">Teacher</option>
+                <option value="programmer">Programmer</option>
+                <option value="creative">Creative</option>
+                <option value="study">Study</option>
+                <option value="researcher">Researcher</option>
+                <option value="gamer">Gamer</option>
+                <option value="analyst">Analyst</option>
+                <option value="expert">Expert</option>
+                <option value="friendly">Friendly</option>
+                <option value="fast">Fast</option>
+                <option value="calm">Calm</option>
+              </select>
             </div>
 
+            <span class="selector-arrow">⌄</span>
 
-            <div class="instructions-row">
+          </div>
 
-                <span class="instructions-label">
-                    SAPI INSTRUCTIONS
-                </span>
 
-                <input
-                    id="customInstructions"
-                    class="custom-instructions"
-                    type="text"
-                    placeholder="Optional: tell SAPI how you want it to respond..."
-                >
+          <!-- MODE -->
 
+          <div class="selector-box">
+
+            <div class="selector-icon mode-icon">
+              ⚡
             </div>
 
+            <div class="selector-content">
+              <span class="selector-label">MODE</span>
 
-            <div class="composer-footer">
-
-                <span>
-                    SAPI AI
-                </span>
-
-                <span>
-                    Built by Saprielle Studio
-                </span>
-
+              <select id="modeSelect">
+                <option value="chat" selected>Chat</option>
+                <option value="research">Research</option>
+                <option value="code">Code</option>
+                <option value="study">Study</option>
+                <option value="write">Write</option>
+                <option value="math">Math</option>
+                <option value="creative">Creative</option>
+                <option value="analyze">Analyze</option>
+                <option value="translate">Translate</option>
+                <option value="summarize">Summarize</option>
+                <option value="brainstorm">Brainstorm</option>
+                <option value="plan">Plan</option>
+              </select>
             </div>
+
+            <span class="selector-arrow">⌄</span>
+
+          </div>
 
         </div>
 
+
+        <div class="topbar-actions">
+
+          <button class="shortcut-btn">
+            ⌘ K
+          </button>
+
+          <button class="top-settings-btn" id="topSettingsBtn">
+            ⚙
+          </button>
+
+          <div class="profile-button">
+            S
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <!-- ================= CHAT AREA ================= -->
+
+      <section class="chat-area" id="chatArea">
+
+        <!-- WELCOME -->
+
+        <div class="welcome-screen" id="welcomeScreen">
+
+          <div class="sapi-avatar-wrap">
+
+            <div class="sapi-avatar">
+              S
+            </div>
+
+            <div class="sapi-badge">
+              ✦ SAPI AI
+            </div>
+
+          </div>
+
+
+          <h1>
+            What can I
+            <span>help you</span>
+            with?
+          </h1>
+
+          <p class="welcome-description">
+            Your intelligent AI assistant. Ask questions, create, code,
+            research and explore.
+          </p>
+
+          <p class="built-by">
+            Built by Saprielle Studio.
+          </p>
+
+
+          <!-- QUICK ACTIONS -->
+
+          <div class="quick-actions">
+
+            <button class="quick-action" data-mode="brainstorm">
+
+              <div class="quick-icon brainstorm-icon">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="brainGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#4e7cff"/>
+                      <stop offset="100%" stop-color="#18c7ff"/>
+                    </linearGradient>
+                  </defs>
+
+                  <path
+                    d="M27 17c-8-3-16 3-16 11 0 4 2 7 5 9-1 8 5 13 12 13h9c7 0 12-5 12-12 4-2 6-6 5-10-1-7-8-11-15-9-3-5-8-7-12-2z"
+                    fill="none"
+                    stroke="url(#brainGradient)"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M25 24c3 4 2 8-1 11M36 22c-3 4-3 7 0 10M30 39c3-3 7-4 11-2"
+                    fill="none"
+                    stroke="url(#brainGradient)"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M20 12l-2-5M43 12l3-5M9 22l-6-2M53 23l6-2"
+                    stroke="#22c8ff"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <strong>Brainstorm</strong>
+                <span>Generate creative ideas</span>
+              </div>
+
+            </button>
+
+
+            <button class="quick-action" data-mode="code">
+
+              <div class="quick-icon code-icon">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="codeGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#a98aff"/>
+                      <stop offset="100%" stop-color="#26bfff"/>
+                    </linearGradient>
+                  </defs>
+
+                  <rect
+                    x="5"
+                    y="5"
+                    width="54"
+                    height="54"
+                    rx="15"
+                    fill="url(#codeGradient)"
+                  />
+
+                  <path
+                    d="M27 21l-10 11 10 11"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+
+                  <path
+                    d="M37 21l-10 22"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                  />
+
+                  <path
+                    d="M37 21l10 11-10 11"
+                    fill="none"
+                    stroke="white"
+                    stroke-width="5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <strong>Code</strong>
+                <span>Build and debug</span>
+              </div>
+
+            </button>
+
+
+            <button class="quick-action" data-mode="research">
+
+              <div class="quick-icon research-icon">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="researchGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#7f63ff"/>
+                      <stop offset="100%" stop-color="#29c7ff"/>
+                    </linearGradient>
+                  </defs>
+
+                  <circle
+                    cx="30"
+                    cy="27"
+                    r="17"
+                    fill="none"
+                    stroke="url(#researchGradient)"
+                    stroke-width="5"
+                  />
+
+                  <path
+                    d="M43 40l12 12"
+                    stroke="url(#researchGradient)"
+                    stroke-width="7"
+                    stroke-linecap="round"
+                  />
+
+                  <circle
+                    cx="30"
+                    cy="27"
+                    r="9"
+                    fill="none"
+                    stroke="url(#researchGradient)"
+                    stroke-width="3"
+                    opacity=".7"
+                  />
+
+                  <path
+                    d="M26 27l3 3 7-8"
+                    fill="none"
+                    stroke="#4f8cff"
+                    stroke-width="4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <strong>Research</strong>
+                <span>Explore a topic</span>
+              </div>
+
+            </button>
+
+
+            <button class="quick-action" data-mode="study">
+
+              <div class="quick-icon study-icon">
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="studyGradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stop-color="#9a69ff"/>
+                      <stop offset="100%" stop-color="#22c7ff"/>
+                    </linearGradient>
+                  </defs>
+
+                  <path
+                    d="M7 13c9-3 18-1 25 6v34c-7-7-16-9-25-6z"
+                    fill="none"
+                    stroke="url(#studyGradient)"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+
+                  <path
+                    d="M57 13c-9-3-18-1-25 6v34c7-7 16-9 25-6z"
+                    fill="none"
+                    stroke="url(#studyGradient)"
+                    stroke-width="4"
+                    stroke-linejoin="round"
+                  />
+
+                  <path
+                    d="M32 19v34"
+                    stroke="url(#studyGradient)"
+                    stroke-width="4"
+                  />
+
+                  <path
+                    d="M14 22l11 4M14 31l11 4M39 26l11-4M39 35l11-4"
+                    stroke="url(#studyGradient)"
+                    stroke-width="3"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </div>
+
+              <div>
+                <strong>Study</strong>
+                <span>Learn something new</span>
+              </div>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- MESSAGES -->
+
+        <div class="messages-container" id="messagesContainer"></div>
+
+      </section>
+
+
+      <!-- ================= COMPOSER ================= -->
+
+      <div class="composer-area">
+
+        <div class="composer">
+
+          <button class="composer-plus" id="attachBtn">
+            +
+          </button>
+
+          <textarea
+            id="messageInput"
+            rows="1"
+            placeholder="Message SAPI..."
+            autocomplete="off"
+          ></textarea>
+
+          <button class="voice-btn" id="voiceBtn">
+            🎙
+          </button>
+
+          <button class="send-btn" id="sendBtn">
+            ➤
+          </button>
+
+        </div>
+
+
+        <div class="instructions-row">
+
+          <span class="instructions-label">
+            SAPI INSTRUCTIONS
+          </span>
+
+          <input
+            id="customInstructions"
+            type="text"
+            placeholder="Optional: tell SAPI how you want it to respond..."
+          >
+
+        </div>
+
+
+        <div class="composer-footer">
+          <span>
+            SAPI can make mistakes. Check important information.
+          </span>
+
+          <span>
+            Gemini • Connected
+          </span>
+        </div>
+
+      </div>
+
     </main>
 
-</div>
+  </div>
 
 
-<!-- MOBILE MENU -->
+  <!-- Mobile overlay -->
 
-<button
-    class="mobile-menu-btn"
-    id="mobileMenuBtn"
->
-    ☰
-</button>
+  <div class="mobile-overlay" id="mobileOverlay"></div>
 
 
-<script src="app.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
